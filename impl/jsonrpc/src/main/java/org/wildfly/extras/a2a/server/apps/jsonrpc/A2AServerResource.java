@@ -465,7 +465,7 @@ public class A2AServerResource {
             Map<String, String> headers = new HashMap<>();
             for (Enumeration<String> headerNames = request.getHeaderNames(); headerNames.hasMoreElements() ; ) {
                 String name = headerNames.nextElement();
-                headers.put(name, headers.get(name));
+                headers.put(name, request.getHeader(name));
             }
 
             state.put(HEADERS_KEY, headers);
@@ -478,8 +478,9 @@ public class A2AServerResource {
             Set<String> requestedExtensions = A2AExtensions.getRequestedExtensions(extensionHeaderValues);
             state.put(TENANT_KEY, extractTenant(request));
             state.put(TRANSPORT_KEY, TransportProtocol.JSONRPC);
-            
-            return new ServerCallContext(user, state, requestedExtensions);
+
+            String requestedVersion = request.getHeader(A2AHeaders.A2A_VERSION);
+            return new ServerCallContext(user, state, requestedExtensions, requestedVersion);
         } else {
             CallContextFactory builder = callContextFactory.get();
             return builder.build(request);

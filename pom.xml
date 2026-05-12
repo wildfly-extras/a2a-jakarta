@@ -45,7 +45,7 @@
     <properties>
         <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
         <version.wildfly>39.0.1.Final</version.wildfly>
-        <version.sdk>1.0.0.Beta1-SNAPSHOT</version.sdk>
+        <version.sdk>1.0.0.Beta2-SNAPSHOT</version.sdk>
 
         <version.hamcrest>2.2</version.hamcrest>
         <version.junit>5.12.2</version.junit>
@@ -127,7 +127,7 @@
             </dependency>
             <dependency>
                 <groupId>org.a2aproject.sdk</groupId>
-                <artifactId>a2a-tck-server</artifactId>
+                <artifactId>a2a-java-sdk-tck-sut</artifactId>
                 <version>${version.sdk}</version>
             </dependency>
             <dependency>
@@ -220,8 +220,8 @@
         <module>impl/jsonrpc</module>
         <module>impl/grpc</module>
         <module>impl/rest</module>
-        <module>tck</module>
         <module>tests</module>
+        <module>tck</module>
     </modules>
     <profiles>
         <profile>
