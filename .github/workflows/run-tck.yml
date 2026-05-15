@@ -13,9 +13,12 @@ on:
 
 env:
   # Ref (branch/tag/SHA) of the TCK
-  TCK_VERSION: main
+  TCK_VERSION: 1.0-dev
   # Tells uv to not need a venv, and instead use system
   UV_SYSTEM_PYTHON: 1
+  # Env vars to configure SUT hosts
+  SUT_HOST: localhost:8080
+  SUT_GRPC_HOST: localhost:9555
 
 # Only run the latest job
 concurrency:
@@ -83,13 +86,14 @@ jobs:
         working-directory: a2a-tck
       - name: Start the WildFly SUT
         run: |
-          SUT_JSONRPC_URL=http://localhost:8080 SUT_REST_URL=http://localhost:8080 SUT_GRPC_URL=http://localhost:9555 mvn wildfly:start -B -Dversion.sdk=${SDK_VERSION} -pl tck -Dstartup-timeout=120 -Dwildfly.serverArgs="--stability=preview"
+          mvn wildfly:start -B -Dversion.sdk=${SDK_VERSION} -pl tck -Dstartup-timeout=120 -Dwildfly.serverArgs="--stability=preview"
       - name: Run TCK
-        env:
-          SUT_JSONRPC_URL: http://localhost:8080
-          TCK_STREAMING_TIMEOUT: 4.0
+        # Might not be needed any longer
+        # env:
+        #  TCK_STREAMING_TIMEOUT: 4.0
         run: |
-          ./run_tck.py --sut-url ${SUT_JSONRPC_URL} --category all --transports jsonrpc,grpc,rest --compliance-report report.json
+          set -o pipefail
+          uv run ./run_tck.py --sut-host http://${{ env.SUT_HOST }} -v 2>&1 | tee tck-output.log
         working-directory: a2a-tck
       - name: Shutdown the WildFly SUT
         run: |
