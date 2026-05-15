@@ -176,56 +176,66 @@ public class A2AServerResource {
         ServerCallContext context = createCallContext(httpRequest, securityContext);
         LOGGER.debug("Handling streaming request with custom SSE response");
 
-        // Set SSE headers manually for proper streaming
+        // Parse and validate before committing to SSE response format.
+        // Validation errors (e.g. terminal task) must be returned as plain
+        // JSON-RPC error responses, not SSE events.
+        A2ARequest<?> request = null;
+        try {
+            request = JSONRPCUtils.parseRequestBody(body, null);
+            validateStreamingRequest((StreamingJSONRPCRequest<?>) request);
+        } catch (A2AError e) {
+            LOGGER.debug("A2AError validating streaming request: {}", e.getMessage());
+            sendJsonRpcError(response, request != null ? request.getId() : null, e);
+            return;
+        } catch (InvalidParamsJsonMappingException e) {
+            LOGGER.warn("Invalid params in streaming request: {}", e.getMessage());
+            sendJsonRpcError(response, e.getId(), new InvalidParamsError(null, e.getMessage(), null));
+            return;
+        } catch (MethodNotFoundJsonMappingException e) {
+            LOGGER.warn("Method not found in streaming request: {}", e.getMessage());
+            sendJsonRpcError(response, e.getId(), new MethodNotFoundError(null, e.getMessage(), null));
+            return;
+        } catch (IdJsonMappingException e) {
+            LOGGER.warn("Invalid request ID in streaming request: {}", e.getMessage());
+            sendJsonRpcError(response, e.getId(), new InvalidRequestError(null, e.getMessage(), null));
+            return;
+        } catch (JsonMappingException e) {
+            LOGGER.warn("JSON mapping error in streaming request: {}", e.getMessage(), e);
+            sendJsonRpcError(response, null, new InvalidRequestError(null, e.getMessage(), null));
+            return;
+        } catch (JsonSyntaxException e) {
+            LOGGER.warn("JSON syntax error in streaming request: {}", e.getMessage());
+            sendJsonRpcError(response, null, new JSONParseError(e.getMessage()));
+            return;
+        } catch (JsonProcessingException e) {
+            LOGGER.warn("JSON processing error in streaming request: {}", e.getMessage());
+            sendJsonRpcError(response, null, new JSONParseError(e.getMessage()));
+            return;
+        } catch (Throwable e) {
+            LOGGER.error("Unexpected error processing streaming request: {}", e.getMessage(), e);
+            sendJsonRpcError(response, null, new InternalError(e.getMessage()));
+            return;
+        }
+
+        // Validation passed — now commit to SSE response format
         response.setContentType(MediaType.SERVER_SENT_EVENTS);
         response.setCharacterEncoding("UTF-8");
         response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
 
-        A2ARequest<?> request = null;
         try {
-            // Parse the request body
-            request = JSONRPCUtils.parseRequestBody(body, null);
-
-            // Get the publisher synchronously to avoid connection closure issues
             Flow.Publisher<? extends A2AResponse<?>> publisher = createStreamingPublisher((StreamingJSONRPCRequest<?>) request, context);
             LOGGER.debug("Created streaming publisher: {}", publisher);
 
             if (publisher != null) {
-                // Handle the streaming response with custom SSE formatting
                 LOGGER.debug("Handling custom SSE response for publisher: {}", publisher);
                 handleCustomSSEResponse(publisher, response, context);
             } else {
-                // Handle unsupported request types
                 LOGGER.debug("Unsupported streaming request type: {}", request.getClass().getSimpleName());
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unsupported streaming request type");
             }
-        } catch (MethodNotFoundJsonMappingException e) {
-            LOGGER.warn("Method not found in streaming request: {}", e.getMessage());
-            sendErrorSSE(response, e.getId(), new MethodNotFoundError());
-        } catch (InvalidParamsJsonMappingException e) {
-            LOGGER.warn("Invalid params in streaming request: {}", e.getMessage());
-            sendErrorSSE(response, e.getId(), new InvalidParamsError());
-        } catch (IdJsonMappingException e) {
-            LOGGER.warn("Invalid request ID in streaming request: {}", e.getMessage());
-            sendErrorSSE(response, e.getId(), new InvalidRequestError());
-        } catch (JsonMappingException e) {
-            LOGGER.warn("JSON mapping error in streaming request: {}", e.getMessage(), e);
-            // Check if this is a parse error wrapped in a mapping exception
-            if (e.getCause() instanceof JsonProcessingException) {
-                sendErrorSSE(response, null, new JSONParseError());
-            } else {
-                // Otherwise it's an invalid request (valid JSON but doesn't match schema)
-                sendErrorSSE(response, null, new InvalidRequestError());
-            }
-        } catch (JsonSyntaxException e) {
-            LOGGER.warn("JSON syntax error in streaming request: {}", e.getMessage());
-            sendErrorSSE(response, null, new JSONParseError());
-        } catch (JsonProcessingException e) {
-            LOGGER.warn("JSON processing error in streaming request: {}", e.getMessage());
-            sendErrorSSE(response, null, new JSONParseError());
         } catch (A2AError e) {
             LOGGER.debug("A2AError in streaming request: {}", e.getMessage());
-            sendErrorSSE(response, request != null ? request.getId() : null, e);
+            sendErrorSSE(response, request.getId(), e);
         } catch (Throwable e) {
             LOGGER.error("Unexpected error processing streaming request: {}", e.getMessage(), e);
             sendErrorSSE(response, null, new InternalError(e.getMessage()));
@@ -290,6 +300,20 @@ public class A2AServerResource {
             return jsonRpcHandler.onGetExtendedCardRequest(req, context);
         } else {
             return generateErrorResponse(request, new UnsupportedOperationError());
+        }
+    }
+
+    /**
+     * Validates a streaming request before entering SSE mode.
+     * Throws A2AError if the task is in a terminal state or not found.
+     * This must be called before setting SSE headers so that errors
+     * are returned as plain JSON-RPC error responses, not SSE events.
+     */
+    private void validateStreamingRequest(StreamingJSONRPCRequest<?> request) throws A2AError {
+        if (request instanceof SendStreamingMessageRequest req) {
+            jsonRpcHandler.validateRequestedTask(req.getParams().message().taskId());
+        } else if (request instanceof SubscribeToTaskRequest req) {
+            jsonRpcHandler.validateRequestedTask(req.getParams().id());
         }
     }
 
@@ -416,6 +440,23 @@ public class A2AServerResource {
     }
 
     /**
+     * Sends a plain JSON-RPC error response (Content-Type: application/json).
+     * Used for pre-streaming validation errors that should not be sent as SSE.
+     */
+    private void sendJsonRpcError(HttpServletResponse response, Object id, A2AError error) {
+        try {
+            A2AErrorResponse errorResponse = new A2AErrorResponse(id, error);
+            String jsonData = serializeResponse(errorResponse);
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setContentType(org.a2aproject.sdk.common.MediaType.APPLICATION_JSON);
+            response.getWriter().write(jsonData);
+            response.getWriter().flush();
+        } catch (Exception e) {
+            LOGGER.error("Error sending JSON-RPC error response: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
      * Sends an error response as a Server-Sent Event.
      */
     private void sendErrorSSE(HttpServletResponse response, Object id, A2AError error) {
@@ -465,7 +506,7 @@ public class A2AServerResource {
             Map<String, String> headers = new HashMap<>();
             for (Enumeration<String> headerNames = request.getHeaderNames(); headerNames.hasMoreElements() ; ) {
                 String name = headerNames.nextElement();
-                headers.put(name, headers.get(name));
+                headers.put(name, request.getHeader(name));
             }
 
             state.put(HEADERS_KEY, headers);
@@ -478,8 +519,9 @@ public class A2AServerResource {
             Set<String> requestedExtensions = A2AExtensions.getRequestedExtensions(extensionHeaderValues);
             state.put(TENANT_KEY, extractTenant(request));
             state.put(TRANSPORT_KEY, TransportProtocol.JSONRPC);
-            
-            return new ServerCallContext(user, state, requestedExtensions);
+
+            String requestedVersion = request.getHeader(A2AHeaders.A2A_VERSION);
+            return new ServerCallContext(user, state, requestedExtensions, requestedVersion);
         } else {
             CallContextFactory builder = callContextFactory.get();
             return builder.build(request);

@@ -124,8 +124,7 @@ public class A2ARestServerResource {
             }
         } finally {
             if (error != null) {
-                httpResponse.setHeader(CONTENT_TYPE, APPLICATION_JSON);
-                httpResponse.sendError(error.getStatusCode(), error.getBody());
+                sendErrorResponse(httpResponse, error);
             } else {
                 handleCustomSSEResponse(streamingResponse.getPublisher(), httpResponse, context);
             }
@@ -149,8 +148,7 @@ public class A2ARestServerResource {
             }
         } finally {
             if (error != null) {
-                httpResponse.setHeader(CONTENT_TYPE, APPLICATION_JSON);
-                httpResponse.sendError(error.getStatusCode(), error.getBody());
+                sendErrorResponse(httpResponse, error);
             } else {
                 handleCustomSSEResponse(streamingResponse.getPublisher(), httpResponse, context);
             }
@@ -420,6 +418,13 @@ public class A2ARestServerResource {
         }
     }
 
+    private void sendErrorResponse(HttpServletResponse httpResponse, RestHandler.HTTPRestResponse error) throws IOException {
+        httpResponse.setStatus(error.getStatusCode());
+        httpResponse.setHeader(CONTENT_TYPE, error.getContentType());
+        httpResponse.getWriter().write(error.getBody());
+        httpResponse.getWriter().flush();
+    }
+
     /**
      * Handles the streaming response using custom SSE formatting.
      * This approach avoids JAX-RS SSE compatibility issues with async publishers.
@@ -428,10 +433,15 @@ public class A2ARestServerResource {
     private void handleCustomSSEResponse(Flow.Publisher<String> publisher,
             HttpServletResponse response,
             ServerCallContext context) throws IOException {
+        response.setHeader(CONTENT_TYPE, MediaType.SERVER_SENT_EVENTS);
+        response.setHeader("Cache-Control", "no-cache");
+        response.setHeader("X-Accel-Buffering", "no");
+
         CompletableFuture<Void> streamingComplete = new CompletableFuture<>();
         try (PrintWriter writer = response.getWriter()) {
+            writer.write(": SSE stream started\n\n");
+            writer.flush();
             publisher.subscribe(new SSESubscriber(streamingComplete, writer, context));
-            // Wait for streaming to complete before method returns
             streamingComplete.get();
         } catch (Exception e) {
             LOGGER.error("Error waiting for streaming completion: {}", e.getMessage(), e);
@@ -485,7 +495,8 @@ public class A2ARestServerResource {
                 extensionHeaderValues.add(en.nextElement());
             }
             Set<String> requestedExtensions = A2AExtensions.getRequestedExtensions(extensionHeaderValues);
-            return new ServerCallContext(user, state, requestedExtensions);
+            String requestedVersion = request.getHeader(A2AHeaders.A2A_VERSION);
+            return new ServerCallContext(user, state, requestedExtensions, requestedVersion);
         } else {
             CallContextFactory builder = callContextFactory.get();
             return builder.build(request);

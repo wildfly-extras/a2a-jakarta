@@ -2,6 +2,7 @@ package org.wildfly.extras.a2a.server.apps.grpc;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
+import java.util.function.Supplier;
 
 import org.a2aproject.sdk.jsonrpc.common.wrappers.ListTasksResult;
 import org.a2aproject.sdk.server.ServerCallContext;
@@ -170,6 +171,14 @@ public class WildFlyGrpcHandler extends GrpcHandler {
         public void onDeleteTaskPushNotificationConfig(DeleteTaskPushNotificationConfigParams params, ServerCallContext context) {
             withDeploymentClassLoader(() -> {
                 delegate.onDeleteTaskPushNotificationConfig(params, context);
+                return null;
+            });
+        }
+
+        @Override
+        public void validateRequestedTask(String requestedTaskId) throws A2AError {
+            withDeploymentClassLoader(() -> {
+                delegate.validateRequestedTask(requestedTaskId);
                 return null;
             });
         }

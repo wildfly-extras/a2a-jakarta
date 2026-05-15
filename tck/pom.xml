@@ -64,6 +64,13 @@
             <scope>provided</scope>
         </dependency>
 
+        <!--
+            Needed for the AgentExecutor which uses some utility classes from here
+        -->
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-client</artifactId>
+        </dependency>
 
         <!--
             Include the TCK server from the a2a-java project.
@@ -72,7 +79,7 @@
         -->
         <dependency>
             <groupId>org.a2aproject.sdk</groupId>
-            <artifactId>a2a-tck-server</artifactId>
+            <artifactId>a2a-java-sdk-tck-sut</artifactId>
             <exclusions>
                 <!--
                     Exclude all dependencies, since we are managing what is included in the jar in the
