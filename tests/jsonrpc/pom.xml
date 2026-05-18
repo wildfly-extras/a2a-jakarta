@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.wildfly.a2a</groupId>
         <artifactId>a2a-java-sdk-jakarta-tests-parent</artifactId>
-        <version>1.0.0.Alpha4-SNAPSHOT</version>
+        <version>1.0.0.Beta1</version>
     </parent>
 
     <artifactId>a2a-java-sdk-jakarta-tests-jsonrpc</artifactId>
