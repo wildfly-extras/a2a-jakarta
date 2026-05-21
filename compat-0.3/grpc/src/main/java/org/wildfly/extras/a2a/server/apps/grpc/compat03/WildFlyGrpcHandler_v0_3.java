@@ -123,102 +123,153 @@ public class WildFlyGrpcHandler_v0_3 extends GrpcHandler_v0_3 {
 
         @Override
         public EventKind_v0_3 onMessageSend(MessageSendParams_v0_3 params, ServerCallContext context) throws A2AError {
-            return withDeploymentClassLoader(() -> {
-                try {
-                    return delegate.onMessageSend(params, context);
-                } catch (A2AError e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            try {
+                return withDeploymentClassLoader(() -> {
+                    try {
+                        return delegate.onMessageSend(params, context);
+                    } catch (A2AError e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (RuntimeException e) {
+                throwIfA2AError(e);
+                throw e;
+            }
         }
 
         @Override
         public Flow.Publisher<StreamingEventKind_v0_3> onMessageSendStream(MessageSendParams_v0_3 params, ServerCallContext context) throws A2AError {
-            return withDeploymentClassLoader(() -> {
-                try {
-                    return delegate.onMessageSendStream(params, context);
-                } catch (A2AError e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            try {
+                return withDeploymentClassLoader(() -> {
+                    try {
+                        return delegate.onMessageSendStream(params, context);
+                    } catch (A2AError e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (RuntimeException e) {
+                throwIfA2AError(e);
+                throw e;
+            }
         }
 
         @Override
         public Task_v0_3 onGetTask(TaskQueryParams_v0_3 params, ServerCallContext context) throws A2AError {
-            return withDeploymentClassLoader(() -> {
-                try {
-                    return delegate.onGetTask(params, context);
-                } catch (A2AError e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            try {
+                return withDeploymentClassLoader(() -> {
+                    try {
+                        return delegate.onGetTask(params, context);
+                    } catch (A2AError e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (RuntimeException e) {
+                throwIfA2AError(e);
+                throw e;
+            }
         }
 
         @Override
         public Task_v0_3 onCancelTask(TaskIdParams_v0_3 params, ServerCallContext context) throws A2AError {
-            return withDeploymentClassLoader(() -> {
-                try {
-                    return delegate.onCancelTask(params, context);
-                } catch (A2AError e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            try {
+                return withDeploymentClassLoader(() -> {
+                    try {
+                        return delegate.onCancelTask(params, context);
+                    } catch (A2AError e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (RuntimeException e) {
+                throwIfA2AError(e);
+                throw e;
+            }
         }
 
         @Override
         public TaskPushNotificationConfig_v0_3 onSetTaskPushNotificationConfig(TaskPushNotificationConfig_v0_3 config, ServerCallContext context) throws A2AError {
-            return withDeploymentClassLoader(() -> {
-                try {
-                    return delegate.onSetTaskPushNotificationConfig(config, context);
-                } catch (A2AError e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            try {
+                return withDeploymentClassLoader(() -> {
+                    try {
+                        return delegate.onSetTaskPushNotificationConfig(config, context);
+                    } catch (A2AError e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (RuntimeException e) {
+                throwIfA2AError(e);
+                throw e;
+            }
         }
 
         @Override
         public TaskPushNotificationConfig_v0_3 onGetTaskPushNotificationConfig(GetTaskPushNotificationConfigParams_v0_3 params, ServerCallContext context) throws A2AError {
-            return withDeploymentClassLoader(() -> {
-                try {
-                    return delegate.onGetTaskPushNotificationConfig(params, context);
-                } catch (A2AError e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            try {
+                return withDeploymentClassLoader(() -> {
+                    try {
+                        return delegate.onGetTaskPushNotificationConfig(params, context);
+                    } catch (A2AError e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (RuntimeException e) {
+                throwIfA2AError(e);
+                throw e;
+            }
         }
 
         @Override
         public Flow.Publisher<StreamingEventKind_v0_3> onResubscribeToTask(TaskIdParams_v0_3 params, ServerCallContext context) throws A2AError {
-            return withDeploymentClassLoader(() -> {
-                try {
-                    return delegate.onResubscribeToTask(params, context);
-                } catch (A2AError e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            try {
+                return withDeploymentClassLoader(() -> {
+                    try {
+                        return delegate.onResubscribeToTask(params, context);
+                    } catch (A2AError e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (RuntimeException e) {
+                throwIfA2AError(e);
+                throw e;
+            }
         }
 
         @Override
         public List<TaskPushNotificationConfig_v0_3> onListTaskPushNotificationConfig(ListTaskPushNotificationConfigParams_v0_3 params, ServerCallContext context) throws A2AError {
-            return withDeploymentClassLoader(() -> {
-                try {
-                    return delegate.onListTaskPushNotificationConfig(params, context);
-                } catch (A2AError e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            try {
+                return withDeploymentClassLoader(() -> {
+                    try {
+                        return delegate.onListTaskPushNotificationConfig(params, context);
+                    } catch (A2AError e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (RuntimeException e) {
+                throwIfA2AError(e);
+                throw e;
+            }
         }
 
         @Override
         public void onDeleteTaskPushNotificationConfig(DeleteTaskPushNotificationConfigParams_v0_3 params, ServerCallContext context) throws A2AError {
-            withDeploymentClassLoader(() -> {
-                try {
-                    delegate.onDeleteTaskPushNotificationConfig(params, context);
-                    return null;
-                } catch (A2AError e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            try {
+                withDeploymentClassLoader(() -> {
+                    try {
+                        delegate.onDeleteTaskPushNotificationConfig(params, context);
+                        return null;
+                    } catch (A2AError e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (RuntimeException e) {
+                throwIfA2AError(e);
+                throw e;
+            }
+        }
+
+        private static void throwIfA2AError(RuntimeException e) throws A2AError {
+            if (e.getCause() instanceof A2AError a2aError) {
+                throw a2aError;
+            }
         }
     }
 }
