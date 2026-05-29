@@ -11,7 +11,7 @@ The server's [`pom.xml`](./server/pom.xml) has two profiles:
 * `jsonrpc`: Provisions the server for use with the A2A protocol using JSON-RPC as the transport.
 * `grpc`: Provisions the server for use with the A2A protocol using gRPC as the transport. This uses the gRPC feature pack which is at the 'preview' stability level.
 
-Currently, the `grpc` dependencies also include the `jsonrpc` ones, mainly because the agent card lookup depends on JSON-RPC.  
+Currently, the `grpc` and `rest` dependencies also include the `jsonrpc` ones, mainly because the agent card lookup depends on JSON-RPC.  
 
 Note that we need to exclude some transitive dependencies of jars which are provided by WildFly. Other Jakarta runtimes may provide different dependencies and need different exclusions.
 

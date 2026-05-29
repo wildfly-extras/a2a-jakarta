@@ -2,7 +2,7 @@
 
 This is the integration of the [A2A Java SDK](https://github.com/a2aproject/a2a-java) for use in Jakarta servers. It is currently tested on **WildFly**, but it should be usable in other compliant Jakarta servers such as Tomcat, Jetty, and OpenLiberty. For Quarkus, use the reference implementation in the [A2A Java SDK](https://github.com/a2aproject/a2a-java) project.
 
-This implementation is aligned with **A2A Protocol Specification 1.0** and uses **A2A Java SDK 1.0.0.Alpha2** (pre-release).
+This implementation is aligned with **A2A Protocol Specification 1.0** and uses **A2A Java SDK 1.0.0.CR1**.
 
 For more information about the A2A protocol, see [here](https://github.com/a2aproject/A2A).
 
@@ -37,21 +37,55 @@ The key to enabling A2A in your Java application is to correctly package it. Her
 
 ### Example
 
-The [tck/pom.xml](./tck/pom.xml) is a good example of how to package an A2A application. Your application can support JSON-RPC, gRPC, or both. In this case, the application is deployed in WildFly, so the dependencies included in the `.war` are tailored to what WildFly provides.
+The [tck/pom.xml](./tck/pom.xml) is a good example of how to package an A2A application. Your application can support JSON-RPC, gRPC, REST, or any combination of these. In this case, the application is deployed in WildFly, so the dependencies included in the `.war` are tailored to what WildFly provides.
 
-In the `tck/pom.xml` we enable both JSON-RPC and gRPC, and have the following dependencies:
+In the `tck/pom.xml` we enable JSON-RPC, gRPC, and REST, and have the following dependencies:
 
-* `org.wildfly.a2a:a2a-java-sdk-jakarta-jsonrpc` - this is the dependency for **JSON-RPC** support. It transitively pulls in all the dependencies from the A2A Java SDK project.
-    * Since some of these dependencies are provided by WildFly already, we exclude those so they do not become part of the `.war`, in order to avoid inconsistencies. If you only want to support gRPC, you can omit this dependency.
-* `org.wildfly.a2a:a2a-java-sdk-server-jakarta-grpc` - this is the dependency for **gRPC** support.
-    * We exclude the gRPC core libraries (`io.grpc` and `com.google.protobuf:protobuf-java`). This is because when deploying to WildFly with gRPC support, the server is provisioned with the WildFly gRPC feature-pack, which already provides these libraries. Including them in the `.war` would lead to conflicts. If you only want to support JSON-RPC, you can omit this dependency.
+* `org.wildfly.a2a:a2a-java-sdk-jakarta-jsonrpc` and `org.wildfly.a2a:a2a-java-sdk-jakarta-jsonrpc-web` - these are the dependencies for **JSON-RPC** support. The `-web` module contains the JAX-RS resources and transitively pulls in the base module. They transitively pull in all the dependencies from the A2A Java SDK project.
+    * Since some of these dependencies are provided by WildFly already, we exclude those so they do not become part of the `.war`, in order to avoid inconsistencies.
+* `org.wildfly.a2a:a2a-java-sdk-jakarta-grpc` - this is the dependency for **gRPC** support.
+    * We exclude the gRPC core libraries (`io.grpc` and `com.google.protobuf:protobuf-java`). This is because when deploying to WildFly with gRPC support, the server is provisioned with the WildFly gRPC feature-pack, which already provides these libraries. Including them in the `.war` would lead to conflicts.
+* `org.wildfly.a2a:a2a-java-sdk-jakarta-rest` and `org.wildfly.a2a:a2a-java-sdk-jakarta-rest-web` - these are the dependencies for **REST** (HTTP+JSON) support. The `-web` module contains the JAX-RS resources and transitively pulls in the base module.
 * `jakarta.ws.rs:jakarta.ws.rs-api` - this is not part of the dependencies brought in via the A2A dependencies but is needed to compile the TCK module. Since it is provided by WildFly, we make the scope `provided` so it is not included in the `.war`.
 * `org.a2aproject.sdk:a2a-java-sdk-tck-sut` - this is the application, which contains the `AgentExecutor` and `AgentCard` implementations for the TCK. In your case, they will most likely be implemented in the project you use to create the `.war`.
-    * In this case we exclude all transitive dependencies, since we are doing the main dependency management via the `org.wildfly.a2a:a2a-java-sdk-jakarta-jsonrpc` and `org.wildfly.a2a:a2a-java-sdk-server-jakarta-grpc` dependencies.
+    * In this case we exclude all transitive dependencies, since we are doing the main dependency management via the transport-specific dependencies above.
 
 If you are deploying to WildFly and want to use gRPC, you will also need to provision the server with the gRPC feature pack. You can see how this is done in the `wildfly-maven-plugin` configuration in the `tck/pom.xml`. Since the gRPC subsystem and feature pack are currently at the `preview` stability level, you will need to start the server with the `--stability=preview` argument.
 
 There are also some [examples](./examples/README.md) that show how to package an application selecting each transport. 
+
+## v0.3 Protocol Compatibility
+
+This project includes support for the A2A Protocol v0.3, both as a standalone deployment and as a multiversion deployment alongside v1.0. The v0.3 compatibility layer converts incoming v0.3 requests to v1.0 format and delegates to a single `AgentExecutor`, so you do not need a separate executor for v0.3 support.
+
+### Standalone v0.3
+
+To deploy an application that only supports v0.3, use the `compat-0.3` modules instead of the v1.0 ones. The [compat-0.3/tck/pom.xml](./compat-0.3/tck/pom.xml) is a good example. The dependencies follow the same pattern as v1.0, but with the `compat-0.3` prefix:
+
+* `org.wildfly.a2a:a2a-java-sdk-jakarta-compat-0.3-jsonrpc` and `a2a-java-sdk-jakarta-compat-0.3-jsonrpc-web` for **JSON-RPC**
+* `org.wildfly.a2a:a2a-java-sdk-jakarta-compat-0.3-grpc` for **gRPC** (same exclusions as v1.0)
+* `org.wildfly.a2a:a2a-java-sdk-jakarta-compat-0.3-rest` and `a2a-java-sdk-jakarta-compat-0.3-rest-web` for **REST**
+
+Your application must provide an `AgentExecutor` and an `AgentCard_v0_3` (instead of `AgentCard`).
+
+### Multiversion (v0.3 + v1.0)
+
+To support both protocol versions in the same deployment, activate the `multi-version` Maven profile. Both the `tck/pom.xml` and `compat-0.3/tck/pom.xml` have a `multi-version` profile that demonstrates this.
+
+The multiversion setup adds the `compat-0.3-multiversion-jsonrpc` and `compat-0.3-multiversion-rest` modules, which handle dispatching requests to the correct protocol version. The standalone `-web` JAX-RS modules for JSON-RPC are excluded (set to `provided` scope) since the multiversion modules replace them.
+
+The approach differs depending on which version is your primary:
+
+* **Primary v1.0** (see `tck/pom.xml` `multi-version` profile): Your application provides a v1.0 `AgentCard` as the primary agent card. You must also provide a minimal `AgentCard_v0_3` to satisfy CDI injection for the v0.3 handlers — see [StubAgentCardProducer_v0_3.java](./tck/src/multi-version/java/org/wildfly/extras/a2a/server/jakarta/tck/StubAgentCardProducer_v0_3.java) for an example.
+* **Primary v0.3** (see `compat-0.3/tck/pom.xml` `multi-version` profile): Your application provides a v0.3 `AgentCard_v0_3` as the primary agent card. You must also produce a v1.0 `AgentCard` — this can be derived from the v0.3 card. See [DerivedAgentCardProducer.java](./compat-0.3/tck/src/multi-version/java/org/wildfly/extras/a2a/server/jakarta/compat03/tck/DerivedAgentCardProducer.java) for an example that converts `AgentCard_v0_3` to `AgentCard`.
+
+In both cases, only a single `AgentExecutor` is needed — the v0.3 conversion layer handles protocol translation automatically.
+
+### Agent Card Compatibility
+
+When serving both protocol versions, the v1.0 `AgentCard` is the one served to clients. To ensure v0.3 clients can parse it, the card must include backward-compatibility fields such as `url`, `preferredTransport`, and `additionalInterfaces`. You can set these manually on the `AgentCard.Builder`, or use the `Compat03Fields.addCompat03FieldsIfAvailable()` utility to add them — see [DerivedAgentCardProducer.java](./compat-0.3/tck/src/multi-version/java/org/wildfly/extras/a2a/server/jakarta/compat03/tck/DerivedAgentCardProducer.java) for an example.
+
+For full details on these fields, see the [Making the v1.0 Agent Card Compatible with v0.3 Clients](https://github.com/a2aproject/a2a-java#making-the-v10-agent-card-compatible-with-v03-clients) section of the A2A Java SDK README.
 
 ## Running the TCK
 
@@ -72,7 +106,7 @@ We can start the server using the following command:
 
 `--stability=preview` is needed since the TCK server is provisioned with the gRPC subsystem, which is currently at the `preview` stability level.
 
-The `SUT_JSONRPC_URL` and `SUT_GRPC_URL` are used by the TCK server's `AgentCardProducer` to specify the transports supported by the server agent.
+The `SUT_JSONRPC_URL`, `SUT_GRPC_URL`, and `SUT_REST_URL` are used by the TCK server's `AgentCardProducer` to specify the transports supported by the server agent.
 
 Once the server is up and running, run the TCK with the instructions in [a2aproject/a2a-tck](https://github.com/a2aproject/a2a-tck).
 
@@ -125,12 +159,3 @@ Start the multiversion server from `tck/`:
 SUT_JSONRPC_URL=http://localhost:8080 SUT_GRPC_URL=http://localhost:9555 SUT_REST_URL=http://localhost:8080 tck/target/wildfly/bin/standalone.sh --stability=preview
 ```
 Then run the **v1.0 TCK** suite against it.
-
-### Agent Card Handling
-
-Each multiversion server handles agent cards differently:
-
-- **`compat-0.3/tck` multiversion**: `DerivedAgentCardProducer` converts the v0.3 `AgentCard_v0_3` into a v1.0 `AgentCard`, copying `additionalInterfaces` to `supportedInterfaces` and calling `Compat03Fields.addCompat03FieldsIfAvailable()` to maintain backward compatibility fields.
-- **`tck` multiversion**: `StubAgentCardProducer_v0_3` produces a minimal `AgentCard_v0_3` to satisfy CDI injection for the v0.3 handlers. The v1.0 `AgentCard` from `TckAgentCardProducer` takes precedence.
-
-In both cases, the v0.3 conversion layer (`Convert_v0_3_To10RequestHandler`) converts incoming v0.3 requests to v1.0 format and delegates to the single `AgentExecutor`, so no separate executor is needed for v0.3 support.
