@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>org.wildfly.a2a</groupId>
-        <artifactId>a2a-java-sdk-jakarta-tests-parent</artifactId>
+        <artifactId>a2a-jakarta-tests-parent</artifactId>
         <version>1.0.0.CR1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>a2a-java-sdk-jakarta-tests-rest</artifactId>
+    <artifactId>a2a-jakarta-tests-rest</artifactId>
 
     <packaging>jar</packaging>
 
@@ -25,13 +25,13 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-rest-web</artifactId>
+            <artifactId>a2a-jakarta-rest-web</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-common</artifactId>
+            <artifactId>a2a-jakarta-common</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

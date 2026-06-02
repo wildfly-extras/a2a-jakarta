@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>org.wildfly.a2a</groupId>
-        <artifactId>a2a-java-sdk-jakarta-tests-multiversion-parent</artifactId>
+        <artifactId>a2a-jakarta-tests-multiversion-parent</artifactId>
         <version>1.0.0.CR1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>a2a-java-sdk-jakarta-tests-multiversion-grpc</artifactId>
+    <artifactId>a2a-jakarta-tests-multiversion-grpc</artifactId>
 
     <packaging>jar</packaging>
 
@@ -25,27 +25,27 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-common</artifactId>
+            <artifactId>a2a-jakarta-common</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- v1.0 Jakarta gRPC module -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-grpc</artifactId>
+            <artifactId>a2a-jakarta-grpc</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <!-- v0.3 Jakarta gRPC module -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-compat-0.3-grpc</artifactId>
+            <artifactId>a2a-jakarta-compat-0.3-grpc</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <!-- Multi-version JSONRPC dispatch module (needed for agent card endpoint) -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-compat-0.3-multiversion-jsonrpc</artifactId>
+            <artifactId>a2a-jakarta-compat-0.3-multiversion-jsonrpc</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

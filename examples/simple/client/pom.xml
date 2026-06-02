@@ -6,12 +6,12 @@
 
     <parent>
         <groupId>org.wildfly.a2a</groupId>
-        <artifactId>a2a-java-sdk-jakarta-examples-parent</artifactId>
+        <artifactId>a2a-jakarta-examples-parent</artifactId>
         <version>1.0.0.CR1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>a2a-java-sdk-jakarta-example-simple-client</artifactId>
+    <artifactId>a2a-jakarta-example-simple-client</artifactId>
 
     <packaging>jar</packaging>
 

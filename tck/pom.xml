@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>org.wildfly.a2a</groupId>
-        <artifactId>a2a-java-sdk-jakarta-parent</artifactId>
+        <artifactId>a2a-jakarta-parent</artifactId>
         <version>1.0.0.CR1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>a2a-java-sdk-jakarta-tck-wildfly</artifactId>
+    <artifactId>a2a-jakarta-tck-wildfly</artifactId>
 
     <packaging>war</packaging>
 
@@ -23,17 +23,17 @@
         -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-jsonrpc</artifactId>
+            <artifactId>a2a-jakarta-jsonrpc</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-jsonrpc-web</artifactId>
+            <artifactId>a2a-jakarta-jsonrpc-web</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-grpc</artifactId>
+            <artifactId>a2a-jakarta-grpc</artifactId>
             <version>${project.version}</version>
             <!-- Exclude gRPC core libraries as they are provided by WildFly's gRPC feature pack -->
             <exclusions>
@@ -54,12 +54,12 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-rest</artifactId>
+            <artifactId>a2a-jakarta-rest</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-rest-web</artifactId>
+            <artifactId>a2a-jakarta-rest-web</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -180,21 +180,21 @@
                 -->
                 <dependency>
                     <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-java-sdk-jakarta-jsonrpc-web</artifactId>
+                    <artifactId>a2a-jakarta-jsonrpc-web</artifactId>
                     <version>${project.version}</version>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
                     <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-java-sdk-jakarta-compat-0.3-jsonrpc</artifactId>
+                    <artifactId>a2a-jakarta-compat-0.3-jsonrpc</artifactId>
                 </dependency>
                 <dependency>
                     <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-java-sdk-jakarta-compat-0.3-rest</artifactId>
+                    <artifactId>a2a-jakarta-compat-0.3-rest</artifactId>
                 </dependency>
                 <dependency>
                     <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-java-sdk-jakarta-compat-0.3-grpc</artifactId>
+                    <artifactId>a2a-jakarta-compat-0.3-grpc</artifactId>
                     <exclusions>
                         <exclusion>
                             <groupId>io.grpc</groupId>
@@ -208,11 +208,11 @@
                 </dependency>
                 <dependency>
                     <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-java-sdk-jakarta-compat-0.3-multiversion-jsonrpc</artifactId>
+                    <artifactId>a2a-jakarta-compat-0.3-multiversion-jsonrpc</artifactId>
                 </dependency>
                 <dependency>
                     <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-java-sdk-jakarta-compat-0.3-multiversion-rest</artifactId>
+                    <artifactId>a2a-jakarta-compat-0.3-multiversion-rest</artifactId>
                 </dependency>
             </dependencies>
             <build>

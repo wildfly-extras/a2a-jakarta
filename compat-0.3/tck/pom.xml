@@ -6,12 +6,12 @@
 
     <parent>
         <groupId>org.wildfly.a2a</groupId>
-        <artifactId>a2a-java-sdk-jakarta-compat-0.3-parent</artifactId>
+        <artifactId>a2a-jakarta-compat-0.3-parent</artifactId>
         <version>1.0.0.CR1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>a2a-java-sdk-jakarta-compat-0.3-tck-wildfly</artifactId>
+    <artifactId>a2a-jakarta-compat-0.3-tck-wildfly</artifactId>
 
     <packaging>war</packaging>
 
@@ -21,23 +21,23 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-compat-0.3-jsonrpc</artifactId>
+            <artifactId>a2a-jakarta-compat-0.3-jsonrpc</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-compat-0.3-jsonrpc-web</artifactId>
+            <artifactId>a2a-jakarta-compat-0.3-jsonrpc-web</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-compat-0.3-rest</artifactId>
+            <artifactId>a2a-jakarta-compat-0.3-rest</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-compat-0.3-rest-web</artifactId>
+            <artifactId>a2a-jakarta-compat-0.3-rest-web</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-compat-0.3-grpc</artifactId>
+            <artifactId>a2a-jakarta-compat-0.3-grpc</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>io.grpc</groupId>
@@ -143,25 +143,25 @@
                 -->
                 <dependency>
                     <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-java-sdk-jakarta-compat-0.3-jsonrpc-web</artifactId>
+                    <artifactId>a2a-jakarta-compat-0.3-jsonrpc-web</artifactId>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
                     <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-java-sdk-jakarta-compat-0.3-rest-web</artifactId>
+                    <artifactId>a2a-jakarta-compat-0.3-rest-web</artifactId>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
                     <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-java-sdk-jakarta-jsonrpc</artifactId>
+                    <artifactId>a2a-jakarta-jsonrpc</artifactId>
                 </dependency>
                 <dependency>
                     <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-java-sdk-jakarta-rest</artifactId>
+                    <artifactId>a2a-jakarta-rest</artifactId>
                 </dependency>
                 <dependency>
                     <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-java-sdk-jakarta-grpc</artifactId>
+                    <artifactId>a2a-jakarta-grpc</artifactId>
                     <exclusions>
                         <exclusion>
                             <groupId>io.grpc</groupId>
@@ -181,11 +181,11 @@
                 </dependency>
                 <dependency>
                     <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-java-sdk-jakarta-compat-0.3-multiversion-jsonrpc</artifactId>
+                    <artifactId>a2a-jakarta-compat-0.3-multiversion-jsonrpc</artifactId>
                 </dependency>
                 <dependency>
                     <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-java-sdk-jakarta-compat-0.3-multiversion-rest</artifactId>
+                    <artifactId>a2a-jakarta-compat-0.3-multiversion-rest</artifactId>
                 </dependency>
             </dependencies>
             <build>

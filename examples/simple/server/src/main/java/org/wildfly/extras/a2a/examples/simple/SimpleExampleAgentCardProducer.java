@@ -59,7 +59,7 @@ public class SimpleExampleAgentCardProducer {
 
     private boolean isGrpcEnabled() {
         try {
-            Class.forName("org.wildfly.extras.a2a.server.apps.grpc.GrpcBeanInitializer");
+            Class.forName("org.wildfly.extras.a2a.grpc.GrpcBeanInitializer");
             return true;
         } catch (Throwable t) {
             return false;
@@ -68,7 +68,7 @@ public class SimpleExampleAgentCardProducer {
 
     private boolean isRest() {
         try {
-            Class.forName("org.wildfly.extras.a2a.server.apps.rest.WildFlyRestTransportMetadata");
+            Class.forName("org.wildfly.extras.a2a.rest.WildFlyRestTransportMetadata");
             return true;
         } catch (Throwable t) {
             return false;

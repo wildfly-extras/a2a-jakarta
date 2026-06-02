@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>org.wildfly.a2a</groupId>
-    <artifactId>a2a-java-sdk-jakarta-parent</artifactId>
+    <artifactId>a2a-jakarta-parent</artifactId>
     <version>1.0.0.CR1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
@@ -75,7 +75,7 @@
         <nexus.serverId>jboss</nexus.serverId>
         <nexus.repository.release>wildfly-extras</nexus.repository.release>
         <nexus.repository.staging>wildfly-extras-staging</nexus.repository.staging>
-        <nexus.staging.tag>a2a-java-sdk-jakarta-${project.version}</nexus.staging.tag>
+        <nexus.staging.tag>a2a-jakarta-${project.version}</nexus.staging.tag>
 
         <!--
             URL of Maven repository to deploy to. There is a -Pstaging-deploy profile to push to a
@@ -127,47 +127,47 @@
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-java-sdk-jakarta-common</artifactId>
+                <artifactId>a2a-jakarta-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-java-sdk-jakarta-jsonrpc</artifactId>
+                <artifactId>a2a-jakarta-jsonrpc</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-java-sdk-jakarta-jsonrpc-web</artifactId>
+                <artifactId>a2a-jakarta-jsonrpc-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-java-sdk-jakarta-rest</artifactId>
+                <artifactId>a2a-jakarta-rest</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-java-sdk-jakarta-rest-web</artifactId>
+                <artifactId>a2a-jakarta-rest-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-java-sdk-jakarta-compat-0.3-jsonrpc</artifactId>
+                <artifactId>a2a-jakarta-compat-0.3-jsonrpc</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-java-sdk-jakarta-compat-0.3-jsonrpc-web</artifactId>
+                <artifactId>a2a-jakarta-compat-0.3-jsonrpc-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-java-sdk-jakarta-compat-0.3-rest</artifactId>
+                <artifactId>a2a-jakarta-compat-0.3-rest</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-java-sdk-jakarta-compat-0.3-rest-web</artifactId>
+                <artifactId>a2a-jakarta-compat-0.3-rest-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -182,22 +182,22 @@
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-java-sdk-jakarta-grpc</artifactId>
+                <artifactId>a2a-jakarta-grpc</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-java-sdk-jakarta-compat-0.3-grpc</artifactId>
+                <artifactId>a2a-jakarta-compat-0.3-grpc</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-java-sdk-jakarta-compat-0.3-multiversion-jsonrpc</artifactId>
+                <artifactId>a2a-jakarta-compat-0.3-multiversion-jsonrpc</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-java-sdk-jakarta-compat-0.3-multiversion-rest</artifactId>
+                <artifactId>a2a-jakarta-compat-0.3-multiversion-rest</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

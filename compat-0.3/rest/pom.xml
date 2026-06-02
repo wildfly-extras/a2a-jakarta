@@ -6,12 +6,12 @@
 
     <parent>
         <groupId>org.wildfly.a2a</groupId>
-        <artifactId>a2a-java-sdk-jakarta-compat-0.3-parent</artifactId>
+        <artifactId>a2a-jakarta-compat-0.3-parent</artifactId>
         <version>1.0.0.CR1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>a2a-java-sdk-jakarta-compat-0.3-rest</artifactId>
+    <artifactId>a2a-jakarta-compat-0.3-rest</artifactId>
 
     <packaging>jar</packaging>
 
@@ -35,7 +35,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.a2a</groupId>
-            <artifactId>a2a-java-sdk-jakarta-common</artifactId>
+            <artifactId>a2a-jakarta-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.a2aproject.sdk</groupId>

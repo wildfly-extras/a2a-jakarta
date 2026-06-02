@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>org.wildfly.a2a</groupId>
-        <artifactId>a2a-java-sdk-jakarta-parent</artifactId>
+        <artifactId>a2a-jakarta-parent</artifactId>
         <version>1.0.0.CR1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>a2a-java-sdk-jakarta-compat-0.3-parent</artifactId>
+    <artifactId>a2a-jakarta-compat-0.3-parent</artifactId>
 
     <packaging>pom</packaging>
 

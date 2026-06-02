@@ -1,1 +1,1 @@
-org.wildfly.extras.a2a.server.apps.grpc.WildFlyGrpcTransportMetadata
+org.wildfly.extras.a2a.grpc.WildFlyGrpcTransportMetadata

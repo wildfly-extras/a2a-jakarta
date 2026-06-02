@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>org.wildfly.a2a</groupId>
-        <artifactId>a2a-java-sdk-jakarta-tests-multiversion-parent</artifactId>
+        <artifactId>a2a-jakarta-tests-multiversion-parent</artifactId>
         <version>1.0.0.CR1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>a2a-java-sdk-jakarta-tests-multiversion-rest</artifactId>
+    <artifactId>a2a-jakarta-tests-multiversion-rest</artifactId>
 
     <packaging>jar</packaging>
 
@@ -21,7 +21,7 @@
         <!-- Jakarta common module (contains SSESubscriber) -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-common</artifactId>
+            <artifactId>a2a-jakarta-common</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- v1.0 REST client transport -->
@@ -33,7 +33,7 @@
         <!-- Multi-version REST dispatch -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-compat-0.3-multiversion-rest</artifactId>
+            <artifactId>a2a-jakarta-compat-0.3-multiversion-rest</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

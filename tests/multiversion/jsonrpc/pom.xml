@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>org.wildfly.a2a</groupId>
-        <artifactId>a2a-java-sdk-jakarta-tests-multiversion-parent</artifactId>
+        <artifactId>a2a-jakarta-tests-multiversion-parent</artifactId>
         <version>1.0.0.CR1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>a2a-java-sdk-jakarta-tests-multiversion-jsonrpc</artifactId>
+    <artifactId>a2a-jakarta-tests-multiversion-jsonrpc</artifactId>
 
     <packaging>jar</packaging>
 
@@ -20,13 +20,13 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-common</artifactId>
+            <artifactId>a2a-jakarta-common</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- Multi-version JSONRPC dispatch module -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-java-sdk-jakarta-compat-0.3-multiversion-jsonrpc</artifactId>
+            <artifactId>a2a-jakarta-compat-0.3-multiversion-jsonrpc</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

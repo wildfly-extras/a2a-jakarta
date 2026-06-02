@@ -41,11 +41,11 @@ The [tck/pom.xml](./tck/pom.xml) is a good example of how to package an A2A appl
 
 In the `tck/pom.xml` we enable JSON-RPC, gRPC, and REST, and have the following dependencies:
 
-* `org.wildfly.a2a:a2a-java-sdk-jakarta-jsonrpc` and `org.wildfly.a2a:a2a-java-sdk-jakarta-jsonrpc-web` - these are the dependencies for **JSON-RPC** support. The `-web` module contains the JAX-RS resources and transitively pulls in the base module. They transitively pull in all the dependencies from the A2A Java SDK project.
+* `org.wildfly.a2a:a2a-jakarta-jsonrpc` and `org.wildfly.a2a:a2a-jakarta-jsonrpc-web` - these are the dependencies for **JSON-RPC** support. The `-web` module contains the JAX-RS resources and transitively pulls in the base module. They transitively pull in all the dependencies from the A2A Java SDK project.
     * Since some of these dependencies are provided by WildFly already, we exclude those so they do not become part of the `.war`, in order to avoid inconsistencies.
-* `org.wildfly.a2a:a2a-java-sdk-jakarta-grpc` - this is the dependency for **gRPC** support.
+* `org.wildfly.a2a:a2a-jakarta-grpc` - this is the dependency for **gRPC** support.
     * We exclude the gRPC core libraries (`io.grpc` and `com.google.protobuf:protobuf-java`). This is because when deploying to WildFly with gRPC support, the server is provisioned with the WildFly gRPC feature-pack, which already provides these libraries. Including them in the `.war` would lead to conflicts.
-* `org.wildfly.a2a:a2a-java-sdk-jakarta-rest` and `org.wildfly.a2a:a2a-java-sdk-jakarta-rest-web` - these are the dependencies for **REST** (HTTP+JSON) support. The `-web` module contains the JAX-RS resources and transitively pulls in the base module.
+* `org.wildfly.a2a:a2a-jakarta-rest` and `org.wildfly.a2a:a2a-jakarta-rest-web` - these are the dependencies for **REST** (HTTP+JSON) support. The `-web` module contains the JAX-RS resources and transitively pulls in the base module.
 * `jakarta.ws.rs:jakarta.ws.rs-api` - this is not part of the dependencies brought in via the A2A dependencies but is needed to compile the TCK module. Since it is provided by WildFly, we make the scope `provided` so it is not included in the `.war`.
 * `org.a2aproject.sdk:a2a-java-sdk-tck-sut` - this is the application, which contains the `AgentExecutor` and `AgentCard` implementations for the TCK. In your case, they will most likely be implemented in the project you use to create the `.war`.
     * In this case we exclude all transitive dependencies, since we are doing the main dependency management via the transport-specific dependencies above.
@@ -62,9 +62,9 @@ This project includes support for the A2A Protocol v0.3, both as a standalone de
 
 To deploy an application that only supports v0.3, use the `compat-0.3` modules instead of the v1.0 ones. The [compat-0.3/tck/pom.xml](./compat-0.3/tck/pom.xml) is a good example. The dependencies follow the same pattern as v1.0, but with the `compat-0.3` prefix:
 
-* `org.wildfly.a2a:a2a-java-sdk-jakarta-compat-0.3-jsonrpc` and `a2a-java-sdk-jakarta-compat-0.3-jsonrpc-web` for **JSON-RPC**
-* `org.wildfly.a2a:a2a-java-sdk-jakarta-compat-0.3-grpc` for **gRPC** (same exclusions as v1.0)
-* `org.wildfly.a2a:a2a-java-sdk-jakarta-compat-0.3-rest` and `a2a-java-sdk-jakarta-compat-0.3-rest-web` for **REST**
+* `org.wildfly.a2a:a2a-jakarta-compat-0.3-jsonrpc` and `a2a-jakarta-compat-0.3-jsonrpc-web` for **JSON-RPC**
+* `org.wildfly.a2a:a2a-jakarta-compat-0.3-grpc` for **gRPC** (same exclusions as v1.0)
+* `org.wildfly.a2a:a2a-jakarta-compat-0.3-rest` and `a2a-jakarta-compat-0.3-rest-web` for **REST**
 
 Your application must provide an `AgentExecutor` and an `AgentCard_v0_3` (instead of `AgentCard`).
 
