@@ -93,7 +93,7 @@
             <exclusions>
                 <!--
                     Exclude all dependencies, since we are managing what is included in the jar in the
-                    org.wildfly.extras.a2a:ctId>a2a-java-sdk-jakarta dependency.
+                    org.wildfly.a2a:ctId>a2a-java-sdk-jakarta dependency.
                 -->
                 <exclusion>
                     <groupId>*</groupId>
