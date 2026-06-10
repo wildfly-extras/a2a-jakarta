@@ -76,14 +76,14 @@ The multiversion setup adds the `compat-0.3-multiversion-jsonrpc` and `compat-0.
 
 The approach differs depending on which version is your primary:
 
-* **Primary v1.0** (see `tck/pom.xml` `multi-version` profile): Your application provides a v1.0 `AgentCard` as the primary agent card. You must also provide a minimal `AgentCard_v0_3` to satisfy CDI injection for the v0.3 handlers — see [StubAgentCardProducer_v0_3.java](./tck/src/multi-version/java/org/wildfly/a2a/server/jakarta/tck/StubAgentCardProducer_v0_3.java) for an example.
-* **Primary v0.3** (see `compat-0.3/tck/pom.xml` `multi-version` profile): Your application provides a v0.3 `AgentCard_v0_3` as the primary agent card. You must also produce a v1.0 `AgentCard` — this can be derived from the v0.3 card. See [DerivedAgentCardProducer.java](./compat-0.3/tck/src/multi-version/java/org/wildfly/a2a/server/jakarta/compat03/tck/DerivedAgentCardProducer.java) for an example that converts `AgentCard_v0_3` to `AgentCard`.
+* **Primary v1.0** (see `tck/pom.xml` `multi-version` profile): Your application provides a v1.0 `AgentCard` as the primary agent card. You must also provide a minimal `AgentCard_v0_3` to satisfy CDI injection for the v0.3 handlers — see [StubAgentCardProducer_v0_3.java](./tck/src/multi-version/java/org/wildfly/a2a/jakarta/tck/StubAgentCardProducer_v0_3.java) for an example.
+* **Primary v0.3** (see `compat-0.3/tck/pom.xml` `multi-version` profile): Your application provides a v0.3 `AgentCard_v0_3` as the primary agent card. You must also produce a v1.0 `AgentCard` — this can be derived from the v0.3 card. See [DerivedAgentCardProducer.java](./compat-0.3/tck/src/multi-version/java/org/wildfly/a2a/jakarta/compat03/tck/DerivedAgentCardProducer.java) for an example that converts `AgentCard_v0_3` to `AgentCard`.
 
 In both cases, only a single `AgentExecutor` is needed — the v0.3 conversion layer handles protocol translation automatically.
 
 ### Agent Card Compatibility
 
-When serving both protocol versions, the v1.0 `AgentCard` is the one served to clients. To ensure v0.3 clients can parse it, the card must include backward-compatibility fields such as `url`, `preferredTransport`, and `additionalInterfaces`. You can set these manually on the `AgentCard.Builder`, or use the `Compat03Fields.addCompat03FieldsIfAvailable()` utility to add them — see [DerivedAgentCardProducer.java](./compat-0.3/tck/src/multi-version/java/org/wildfly/a2a/server/jakarta/compat03/tck/DerivedAgentCardProducer.java) for an example.
+When serving both protocol versions, the v1.0 `AgentCard` is the one served to clients. To ensure v0.3 clients can parse it, the card must include backward-compatibility fields such as `url`, `preferredTransport`, and `additionalInterfaces`. You can set these manually on the `AgentCard.Builder`, or use the `Compat03Fields.addCompat03FieldsIfAvailable()` utility to add them — see [DerivedAgentCardProducer.java](./compat-0.3/tck/src/multi-version/java/org/wildfly/a2a/jakarta/compat03/tck/DerivedAgentCardProducer.java) for an example.
 
 For full details on these fields, see the [Making the v1.0 Agent Card Compatible with v0.3 Clients](https://github.com/a2aproject/a2a-java#making-the-v10-agent-card-compatible-with-v03-clients) section of the A2A Java SDK README.
 

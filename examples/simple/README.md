@@ -22,8 +22,8 @@ To create your own agent, you need to implement `AgentCard` and `AgentExecutor` 
 
 You can see our simple implementations at:
 
-* [`SimpleExampleAgentCardProducer.java`](./server/src/main/java/org/wildfly/a2a/examples/simple/SimpleExampleAgentCardProducer.java) - configures the agent card with transport URLs and protocol version. Note that this has logic to determine which transports exist on the classpath, which are then added to the supportedInterfaces of the AgentCard.
-* [`SimpleExampleAgentExecutorProducer.java`](./server/src/main/java/org/wildfly/a2a/examples/simple/SimpleExampleAgentExecutorProducer.java) - implements task execution using `AgentEmitter` to manage task lifecycle and artifacts
+* [`SimpleExampleAgentCardProducer.java`](./server/src/main/java/org/wildfly/a2a/jakarta/examples/simple/SimpleExampleAgentCardProducer.java) - configures the agent card with transport URLs and protocol version. Note that this has logic to determine which transports exist on the classpath, which are then added to the supportedInterfaces of the AgentCard.
+* [`SimpleExampleAgentExecutorProducer.java`](./server/src/main/java/org/wildfly/a2a/jakarta/examples/simple/SimpleExampleAgentExecutorProducer.java) - implements task execution using `AgentEmitter` to manage task lifecycle and artifacts
 
 The `AgentExecutor` interface provides two methods:
 * `execute(RequestContext context, AgentEmitter emitter)` - handles incoming requests, using the `AgentEmitter` to signal work progress, add artifacts, and complete tasks
@@ -34,7 +34,7 @@ In this example, the LLM interaction is mocked. For more advanced examples on ho
 The application is packaged as a `.war` with the relevant dependencies for the targeted transport(s). For more details on the dependencies, please see [`server/pom.xml`](./server/pom.xml). Note that the deployment is renamed to `ROOT.war` in the `wildfly-maven-plugin` so that it is deployed under the root web context.
 
 ## Client
-The client is a simple Java application that demonstrates how to interact with the server. The client implementation is in [`SimpleExampleClient.java`](./client/src/main/java/org/wildfly/a2a/examples/simple/client/SimpleExampleClient.java).
+The client is a simple Java application that demonstrates how to interact with the server. The client implementation is in [`SimpleExampleClient.java`](./client/src/main/java/org/wildfly/a2a/jakarta/examples/simple/client/SimpleExampleClient.java).
 
 When invoked from the command-line it takes the following parameters:
 1) The name of the transport to use. This is either `JSONRPC` or `GRPC`.

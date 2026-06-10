@@ -1,1 +1,1 @@
-org.wildfly.a2a.grpc.WildFlyGrpcTransportMetadata
+org.wildfly.a2a.jakarta.grpc.WildFlyGrpcTransportMetadata

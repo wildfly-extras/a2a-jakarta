@@ -68,7 +68,7 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>org.wildfly.a2a.examples.simple.client.SimpleExampleClient</mainClass>
+                    <mainClass>org.wildfly.a2a.jakarta.examples.simple.client.SimpleExampleClient</mainClass>
                 </configuration>
             </plugin>
         </plugins>
