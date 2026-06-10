@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
+import io.grpc.ManagedChannelBuilder;
 import org.a2aproject.sdk.A2A;
 import org.a2aproject.sdk.client.Client;
 import org.a2aproject.sdk.client.ClientBuilder;
@@ -29,13 +30,16 @@ import org.a2aproject.sdk.spec.Part;
 import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TextPart;
 import org.a2aproject.sdk.spec.TransportProtocol;
-import io.grpc.ManagedChannelBuilder;
 
 public class SimpleExampleClient implements AutoCloseable {
     private final Client client;
 
     public SimpleExampleClient(String protocol) throws A2AClientError, A2AClientException {
-        AgentCard agentCard = new A2ACardResolver("http://localhost:8080").getAgentCard();
+        AgentCard agentCard = A2ACardResolver
+                .builder()
+                .baseUrl("http://localhost:8080")
+                .build()
+                .getAgentCard();
 
         ClientConfig config = new ClientConfig.Builder()
                 .setAcceptedOutputModes(List.of("text"))
