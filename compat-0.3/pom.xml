@@ -19,12 +19,8 @@
 
     <modules>
         <module>rest</module>
-        <module>rest-web</module>
         <module>jsonrpc</module>
-        <module>jsonrpc-web</module>
         <module>grpc</module>
-        <module>multiversion-rest</module>
-        <module>multiversion-jsonrpc</module>
         <module>tck</module>
     </modules>
 </project>

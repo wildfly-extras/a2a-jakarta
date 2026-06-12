@@ -8,20 +8,22 @@ import com.google.api.AnnotationsProto;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.protobuf.util.JsonFormat;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import mutiny.zero.ZeroPublisher;
 import org.a2aproject.sdk.A2A;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.compat03.client.ClientBuilder_v0_3;
-import org.a2aproject.sdk.compat03.client.transport.grpc.GrpcTransport_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.grpc.GrpcTransportConfigBuilder_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.grpc.GrpcTransportProvider_v0_3;
+import org.a2aproject.sdk.compat03.client.transport.grpc.GrpcTransport_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2AServerServerTest_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.TransportProtocol_v0_3;
 import org.a2aproject.sdk.compat03.transport.grpc.handler.GrpcHandler_v0_3;
 import org.a2aproject.sdk.compat03.transport.jsonrpc.handler.JSONRPCHandler_v0_3;
-import org.a2aproject.sdk.transport.jsonrpc.handler.JSONRPCHandler;
 import org.a2aproject.sdk.grpc.A2AServiceGrpc;
 import org.a2aproject.sdk.grpc.utils.JSONRPCUtils;
 import org.a2aproject.sdk.integrations.microprofile.MicroProfileConfigProvider;
@@ -30,10 +32,8 @@ import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.apps.common.AbstractA2AServerTest;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.transport.grpc.handler.GrpcHandler;
+import org.a2aproject.sdk.transport.jsonrpc.handler.JSONRPCHandler;
 import org.a2aproject.sdk.util.Assert;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import mutiny.zero.ZeroPublisher;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
@@ -45,9 +45,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.wildfly.a2a.jakarta.common.AsyncManagedExecutorServiceProducer;
 import org.wildfly.a2a.jakarta.grpc.WildFlyGrpcHandler;
 import org.wildfly.a2a.jakarta.grpc.compat03.WildFlyGrpcHandler_v0_3;
-import org.wildfly.a2a.jakarta.jsonrpc.A2AServerResourceDelegate;
-import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResourceDelegate_v0_3;
-import org.wildfly.a2a.jakarta.jsonrpc.multiversion.MultiVersionA2AServerResource;
+import org.wildfly.a2a.jakarta.jsonrpc.A2AServerResource;
+import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResource_v0_3;
 
 @ArquillianTest
 @RunAsClient
@@ -87,15 +86,13 @@ public class MultiVersion_v0_3_GrpcTest extends AbstractA2AServerServerTest_v0_3
                 getJarForClass(WildFlyGrpcHandler.class),
                 // a2a-jakarta-compat-0.3-grpc.jar (v0.3)
                 getJarForClass(WildFlyGrpcHandler_v0_3.class),
-                // a2a-jakarta-compat-0.3-multiversion-jsonrpc.jar - needed for agent card endpoint
-                getJarForClass(MultiVersionA2AServerResource.class),
-                // a2a-jakarta-jsonrpc.jar - contains v1.0 delegate
-                getJarForClass(A2AServerResourceDelegate.class),
-                // a2a-jakarta-compat-0.3-jsonrpc.jar - contains v0.3 delegate
-                getJarForClass(A2AServerResourceDelegate_v0_3.class),
-                // v1.0 transport-jsonrpc (needed by MultiVersionA2AServerResource)
+                // a2a-jakarta-jsonrpc.jar - contains v1.0 JSON-RPC resource and delegate
+                getJarForClass(A2AServerResource.class),
+                // a2a-jakarta-compat-0.3-jsonrpc.jar - contains v0.3 JSON-RPC resource and delegate
+                getJarForClass(A2AServerResource_v0_3.class),
+                // v1.0 transport-jsonrpc (needed by JSON-RPC resources)
                 getJarForClass(JSONRPCHandler.class),
-                // v0.3 transport-jsonrpc (needed by MultiVersionA2AServerResource)
+                // v0.3 transport-jsonrpc (needed by v0.3 JSON-RPC resource)
                 getJarForClass(JSONRPCHandler_v0_3.class),
                 // a2a-java-sdk-client.jar
                 getJarForClass(A2A.class),

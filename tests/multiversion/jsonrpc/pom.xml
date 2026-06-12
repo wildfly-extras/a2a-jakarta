@@ -20,13 +20,20 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-common</artifactId>
+            <artifactId>a2a-jakarta-http-common</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Multi-version JSONRPC dispatch module -->
+        <!-- v1.0 JSON-RPC module -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-compat-0.3-multiversion-jsonrpc</artifactId>
+            <artifactId>a2a-jakarta-jsonrpc</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- v0.3 JSON-RPC module -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-jakarta-compat-0.3-jsonrpc</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

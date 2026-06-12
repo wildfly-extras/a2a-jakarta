@@ -30,13 +30,13 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-jsonrpc-web</artifactId>
+            <artifactId>a2a-jakarta-jsonrpc</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-common</artifactId>
+            <artifactId>a2a-jakarta-http-common</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

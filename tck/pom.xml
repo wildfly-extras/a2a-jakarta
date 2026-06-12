@@ -28,11 +28,6 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-jsonrpc-web</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>a2a-jakarta-grpc</artifactId>
             <version>${project.version}</version>
             <!-- Exclude gRPC core libraries as they are provided by WildFly's gRPC feature pack -->
@@ -55,11 +50,6 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>a2a-jakarta-rest</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-rest-web</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -169,21 +159,14 @@
             <id>multi-version</id>
             <dependencies>
                 <!--
-                    Exclude the standalone v1.0 JSON-RPC JAX-RS resource from the WAR.
-                    The multiversion JSON-RPC module at @Path("/") handles both v1.0
-                    and v0.3 JSON-RPC dispatching and serves the agent card.
-
-                    rest-web is NOT excluded: its @Path("/") resource serves v1.0 REST
-                    endpoints, while the multiversion REST module at @Path("/v1") only
-                    handles v0.3 REST. Both serve the same v1.0 agent card, so the
-                    duplicate /.well-known/agent-card.json endpoint is benign.
+                    Add v0.3 compat modules. All resources now have unique @Path
+                    prefixes so they can coexist without conflicts:
+                    - v1.0 REST: @Path("/a2a_rest_v1.0")
+                    - v0.3 REST: @Path("/a2a_rest_v0.3/v1")
+                    - v1.0 JSON-RPC: @Path("/a2a_jsonrpc_v1.0")
+                    - v0.3 JSON-RPC: @Path("/a2a_jsonrpc_v0.3")
+                    Version routing filters in common handle dispatching.
                 -->
-                <dependency>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-jakarta-jsonrpc-web</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
                 <dependency>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>a2a-jakarta-compat-0.3-jsonrpc</artifactId>
@@ -205,14 +188,6 @@
                             <artifactId>protobuf-java</artifactId>
                         </exclusion>
                     </exclusions>
-                </dependency>
-                <dependency>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-jakarta-compat-0.3-multiversion-jsonrpc</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-jakarta-compat-0.3-multiversion-rest</artifactId>
                 </dependency>
             </dependencies>
             <build>

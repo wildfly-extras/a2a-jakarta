@@ -21,7 +21,7 @@
         <!-- Jakarta common module (contains SSESubscriber) -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-common</artifactId>
+            <artifactId>a2a-jakarta-http-common</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- v1.0 REST client transport -->
@@ -30,10 +30,17 @@
             <artifactId>a2a-java-sdk-client-transport-rest</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Multi-version REST dispatch -->
+        <!-- v1.0 REST module -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-compat-0.3-multiversion-rest</artifactId>
+            <artifactId>a2a-jakarta-rest</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- v0.3 REST module -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-jakarta-compat-0.3-rest</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

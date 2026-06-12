@@ -25,15 +25,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-compat-0.3-jsonrpc-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
             <artifactId>a2a-jakarta-compat-0.3-rest</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-compat-0.3-rest-web</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -136,21 +128,14 @@
             <id>multi-version</id>
             <dependencies>
                 <!--
-                    Exclude standalone v0.3 and v1.0 JAX-RS resources from the WAR.
-                    The multiversion modules handle all dispatching and serve the agent card.
-                    Without this, multiple @Path("/") resources compete for
-                    /.well-known/agent-card.json and RESTEasy may pick the wrong one.
+                    Add v1.0 modules. All resources now have unique @Path
+                    prefixes so they can coexist without conflicts:
+                    - v1.0 REST: @Path("/a2a_rest_v1.0")
+                    - v0.3 REST: @Path("/a2a_rest_v0.3/v1")
+                    - v1.0 JSON-RPC: @Path("/a2a_jsonrpc_v1.0")
+                    - v0.3 JSON-RPC: @Path("/a2a_jsonrpc_v0.3")
+                    Version routing filters in common handle dispatching.
                 -->
-                <dependency>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-jakarta-compat-0.3-jsonrpc-web</artifactId>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-jakarta-compat-0.3-rest-web</artifactId>
-                    <scope>provided</scope>
-                </dependency>
                 <dependency>
                     <groupId>${project.groupId}</groupId>
                     <artifactId>a2a-jakarta-jsonrpc</artifactId>
@@ -178,14 +163,6 @@
                 <dependency>
                     <groupId>org.a2aproject.sdk</groupId>
                     <artifactId>a2a-java-sdk-spec-grpc</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-jakarta-compat-0.3-multiversion-jsonrpc</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>${project.groupId}</groupId>
-                    <artifactId>a2a-jakarta-compat-0.3-multiversion-rest</artifactId>
                 </dependency>
             </dependencies>
             <build>

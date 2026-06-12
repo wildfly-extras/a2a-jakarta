@@ -35,7 +35,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.wildfly.a2a.jakarta.common.AsyncManagedExecutorServiceProducer;
-import org.wildfly.a2a.jakarta.jsonrpc.web.compat03.A2AServerResource_v0_3;
+import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResource_v0_3;
 import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResourceDelegate_v0_3;
 
 
@@ -93,7 +93,7 @@ public class JakartaA2AServer_v0_3_JSONRPCTest extends AbstractA2AServerServerTe
                 getJarForClass(ImmutableSet.class),
                 // a2a-jakarta-compat-0.3-jsonrpc.jar - contains delegate
                 getJarForClass(A2AServerResourceDelegate_v0_3.class),
-                // a2a-jakarta-compat-0.3-jsonrpc-web.jar - contains A2AServerResource_v0_3
+                // a2a-jakarta-compat-0.3-jsonrpc.jar - contains A2AServerResource_v0_3
                 getJarForClass(A2AServerResource_v0_3.class),
                 // v0.3 transport-jsonrpc
                 getJarForClass(JSONRPCHandler_v0_3.class),

@@ -144,7 +144,7 @@
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-jakarta-common</artifactId>
+                <artifactId>a2a-jakarta-http-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -154,17 +154,7 @@
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-jakarta-jsonrpc-web</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wildfly.a2a</groupId>
                 <artifactId>a2a-jakarta-rest</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-jakarta-rest-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -174,17 +164,7 @@
             </dependency>
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-jakarta-compat-0.3-jsonrpc-web</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wildfly.a2a</groupId>
                 <artifactId>a2a-jakarta-compat-0.3-rest</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-jakarta-compat-0.3-rest-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -205,16 +185,6 @@
             <dependency>
                 <groupId>org.wildfly.a2a</groupId>
                 <artifactId>a2a-jakarta-compat-0.3-grpc</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-jakarta-compat-0.3-multiversion-jsonrpc</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wildfly.a2a</groupId>
-                <artifactId>a2a-jakarta-compat-0.3-multiversion-rest</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -315,12 +285,10 @@
     </build>
     <modules>
         <module>examples</module>
-        <module>common</module>
+        <module>http-common</module>
         <module>impl/jsonrpc</module>
-        <module>impl/jsonrpc-web</module>
         <module>impl/grpc</module>
         <module>impl/rest</module>
-        <module>impl/rest-web</module>
         <module>compat-0.3</module>
         <module>tests</module>
         <module>tck</module>

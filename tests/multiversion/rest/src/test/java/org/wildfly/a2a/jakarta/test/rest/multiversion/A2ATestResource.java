@@ -24,7 +24,8 @@ import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
-import org.wildfly.a2a.jakarta.rest.multiversion.MultiVersionA2ARestServerResource;
+import org.wildfly.a2a.jakarta.rest.A2ARestServerResourceDelegate;
+import org.wildfly.a2a.jakarta.rest.compat03.A2ARestServerResourceDelegate_v0_3;
 
 @Path("/test")
 @ApplicationScoped
@@ -36,7 +37,8 @@ public class A2ATestResource {
 
     @PostConstruct
     public void init() {
-        MultiVersionA2ARestServerResource.setStreamingIsSubscribedRunnable(streamingSubscribedCount::incrementAndGet);
+        A2ARestServerResourceDelegate.setStreamingIsSubscribedRunnable(streamingSubscribedCount::incrementAndGet);
+        A2ARestServerResourceDelegate_v0_3.setStreamingIsSubscribedRunnable(streamingSubscribedCount::incrementAndGet);
     }
 
 

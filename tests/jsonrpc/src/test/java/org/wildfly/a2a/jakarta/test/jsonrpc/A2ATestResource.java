@@ -24,7 +24,7 @@ import org.a2aproject.sdk.spec.Task;
 import org.a2aproject.sdk.spec.TaskArtifactUpdateEvent;
 import org.a2aproject.sdk.spec.TaskPushNotificationConfig;
 import org.a2aproject.sdk.spec.TaskStatusUpdateEvent;
-import org.wildfly.a2a.jakarta.jsonrpc.web.A2AServerResource;
+import org.wildfly.a2a.jakarta.jsonrpc.A2AServerResource;
 
 @Path("/test")
 @ApplicationScoped
