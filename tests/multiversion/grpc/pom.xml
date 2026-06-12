@@ -25,7 +25,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-common</artifactId>
+            <artifactId>a2a-jakarta-http-common</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- v1.0 Jakarta gRPC module -->
@@ -42,20 +42,27 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!-- Multi-version JSONRPC dispatch module (needed for agent card endpoint) -->
+        <!-- v1.0 JSON-RPC module (needed for agent card and JSON-RPC endpoints) -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-compat-0.3-multiversion-jsonrpc</artifactId>
+            <artifactId>a2a-jakarta-jsonrpc</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- v1.0 transport JSONRPC (needed by MultiVersionA2AServerResource) -->
+        <!-- v0.3 JSON-RPC module -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-jakarta-compat-0.3-jsonrpc</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- v1.0 transport JSONRPC (needed by JSON-RPC resources) -->
         <dependency>
             <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-transport-jsonrpc</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- v0.3 transport JSONRPC (needed by MultiVersionA2AServerResource) -->
+        <!-- v0.3 transport JSONRPC (needed by v0.3 JSON-RPC resource) -->
         <dependency>
             <groupId>org.a2aproject.sdk</groupId>
             <artifactId>a2a-java-sdk-compat-0.3-transport-jsonrpc</artifactId>

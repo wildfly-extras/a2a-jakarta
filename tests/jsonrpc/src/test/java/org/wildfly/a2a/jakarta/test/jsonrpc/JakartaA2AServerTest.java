@@ -37,7 +37,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Test;
 import org.wildfly.a2a.jakarta.common.AsyncManagedExecutorServiceProducer;
-import org.wildfly.a2a.jakarta.jsonrpc.web.A2AServerResource;
+import org.wildfly.a2a.jakarta.jsonrpc.A2AServerResource;
 import org.wildfly.a2a.jakarta.jsonrpc.WildFlyJSONRPCTransportMetadata;
 
 import static io.restassured.RestAssured.given;
@@ -98,7 +98,7 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
                 getJarForClass(ImmutableSet.class),
                 // a2a-jakarta-jsonrpc.jar - contains delegate and WildFlyJSONRPCTransportMetadata
                 getJarForClass(WildFlyJSONRPCTransportMetadata.class),
-                // a2a-jakarta-jsonrpc-web.jar - contains A2AServerResource
+                // a2a-jakarta-jsonrpc.jar - contains A2AServerResource
                 getJarForClass(A2AServerResource.class),
                 //a2a-java-sdk-microprofile-config.jar (needed to configure a2a-java settings via MP Config)
                 getJarForClass(MicroProfileConfigProvider.class),

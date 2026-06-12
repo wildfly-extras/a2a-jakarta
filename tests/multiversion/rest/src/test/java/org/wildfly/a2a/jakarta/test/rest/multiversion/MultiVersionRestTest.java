@@ -36,9 +36,10 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.wildfly.a2a.jakarta.common.SSESubscriber;
+import org.wildfly.a2a.jakarta.rest.A2ARestServerResource;
 import org.wildfly.a2a.jakarta.rest.A2ARestServerResourceDelegate;
 import org.wildfly.a2a.jakarta.rest.compat03.A2ARestServerResourceDelegate_v0_3;
-import org.wildfly.a2a.jakarta.rest.multiversion.MultiVersionA2ARestServerResource;
+import org.wildfly.a2a.jakarta.rest.compat03.A2ARestServerResource_v0_3;
 import org.wildfly.a2a.jakarta.test.rest.multiversion.producer.MultiVersionAgentCardProducer;
 
 
@@ -57,7 +58,7 @@ public class MultiVersionRestTest extends AbstractA2AServerTest {
 
     @Override
     protected String getTransportUrl() {
-        return "http://localhost:8080/v1";
+        return "http://localhost:8080";
     }
 
     @Override
@@ -96,12 +97,10 @@ public class MultiVersionRestTest extends AbstractA2AServerTest {
                 getJarForClass(ImmutableSet.class),
                 // a2a-jakarta-common.jar (contains SSESubscriber)
                 getJarForClass(SSESubscriber.class),
-                // a2a-jakarta-compat-0.3-multiversion-rest.jar - contains MultiVersionA2ARestServerResource
-                getJarForClass(MultiVersionA2ARestServerResource.class),
-                // a2a-jakarta-rest.jar - contains v1.0 delegate
-                getJarForClass(A2ARestServerResourceDelegate.class),
-                // a2a-jakarta-compat-0.3-rest.jar - contains v0.3 delegate
-                getJarForClass(A2ARestServerResourceDelegate_v0_3.class),
+                // a2a-jakarta-rest.jar - contains v1.0 REST resource and delegate
+                getJarForClass(A2ARestServerResource.class),
+                // a2a-jakarta-compat-0.3-rest.jar - contains v0.3 REST resource and delegate
+                getJarForClass(A2ARestServerResource_v0_3.class),
                 // v0.3 transport-rest
                 getJarForClass(RestHandler_v0_3.class),
                 // v0.3 server-conversion

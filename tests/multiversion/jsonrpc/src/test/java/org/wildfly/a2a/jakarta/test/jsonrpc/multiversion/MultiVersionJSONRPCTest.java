@@ -36,9 +36,10 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.wildfly.a2a.jakarta.common.AsyncManagedExecutorServiceProducer;
+import org.wildfly.a2a.jakarta.jsonrpc.A2AServerResource;
 import org.wildfly.a2a.jakarta.jsonrpc.A2AServerResourceDelegate;
+import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResource_v0_3;
 import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResourceDelegate_v0_3;
-import org.wildfly.a2a.jakarta.jsonrpc.multiversion.MultiVersionA2AServerResource;
 
 
 @ArquillianTest
@@ -93,12 +94,10 @@ public class MultiVersionJSONRPCTest extends AbstractA2AServerTest {
                 getJarForClass(AnnotationsProto.class),
                 // guava.jar (required by a2a-java dependencies)
                 getJarForClass(ImmutableSet.class),
-                // a2a-jakarta-compat-0.3-multiversion-jsonrpc.jar - contains MultiVersionA2AServerResource
-                getJarForClass(MultiVersionA2AServerResource.class),
-                // a2a-jakarta-jsonrpc.jar - contains v1.0 delegate
-                getJarForClass(A2AServerResourceDelegate.class),
-                // a2a-jakarta-compat-0.3-jsonrpc.jar - contains v0.3 delegate
-                getJarForClass(A2AServerResourceDelegate_v0_3.class),
+                // a2a-jakarta-jsonrpc.jar - contains v1.0 JSON-RPC resource and delegate
+                getJarForClass(A2AServerResource.class),
+                // a2a-jakarta-compat-0.3-jsonrpc.jar - contains v0.3 JSON-RPC resource and delegate
+                getJarForClass(A2AServerResource_v0_3.class),
                 // v0.3 transport-jsonrpc
                 getJarForClass(JSONRPCHandler_v0_3.class),
                 // v0.3 server-conversion

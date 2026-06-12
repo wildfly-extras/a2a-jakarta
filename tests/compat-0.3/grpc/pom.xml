@@ -25,7 +25,7 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-common</artifactId>
+            <artifactId>a2a-jakarta-http-common</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- v0.3 Jakarta gRPC module -->
@@ -145,12 +145,6 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>a2a-jakarta-compat-0.3-jsonrpc</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-compat-0.3-jsonrpc-web</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

@@ -21,7 +21,7 @@
         <!-- v0.3 Jakarta REST module -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-compat-0.3-rest-web</artifactId>
+            <artifactId>a2a-jakarta-compat-0.3-rest</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
@@ -87,7 +87,7 @@
         <!-- Jakarta common module (contains SSESubscriber used by REST resources) -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>a2a-jakarta-common</artifactId>
+            <artifactId>a2a-jakarta-http-common</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

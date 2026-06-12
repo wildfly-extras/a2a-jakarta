@@ -43,7 +43,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.wildfly.a2a.jakarta.common.AsyncManagedExecutorServiceProducer;
 import org.wildfly.a2a.jakarta.grpc.compat03.WildFlyGrpcHandler_v0_3;
 import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResourceDelegate_v0_3;
-import org.wildfly.a2a.jakarta.jsonrpc.web.compat03.A2AServerResource_v0_3;
+import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResource_v0_3;
 
 @ArquillianTest
 @RunAsClient
@@ -86,7 +86,7 @@ public class WildFlyA2A_v0_3_GrpcTestCase extends AbstractA2AServerServerTest_v0
                 getJarForClass(WildFlyGrpcHandler_v0_3.class),
                 // a2a-jakarta-compat-0.3-jsonrpc.jar - contains delegate
                 getJarForClass(A2AServerResourceDelegate_v0_3.class),
-                // a2a-jakarta-compat-0.3-jsonrpc-web.jar - needed for agent card endpoint
+                // a2a-jakarta-compat-0.3-jsonrpc.jar - needed for agent card endpoint
                 getJarForClass(A2AServerResource_v0_3.class),
                 // v0.3 transport-jsonrpc (needed by A2AServerResource_v0_3)
                 getJarForClass(JSONRPCHandler_v0_3.class),

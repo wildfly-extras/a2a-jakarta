@@ -35,7 +35,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.a2a</groupId>
-            <artifactId>a2a-jakarta-common</artifactId>
+            <artifactId>a2a-jakarta-http-common</artifactId>
         </dependency>
         <dependency>
             <groupId>org.a2aproject.sdk</groupId>

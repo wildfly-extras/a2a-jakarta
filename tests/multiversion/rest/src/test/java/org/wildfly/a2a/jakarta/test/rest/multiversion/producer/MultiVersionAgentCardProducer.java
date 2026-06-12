@@ -30,7 +30,7 @@ public class MultiVersionAgentCardProducer {
     public AgentCard agentCard() {
         String port = System.getProperty("test.agent.card.port", "8080");
         String preferredTransport = loadPreferredTransportFromProperties();
-        String transportUrl = "http://localhost:" + port + "/v1";
+        String transportUrl = "http://localhost:" + port;
 
         List<AgentInterface> interfaces = Collections.singletonList(new AgentInterface(preferredTransport, transportUrl));
 

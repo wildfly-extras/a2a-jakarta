@@ -37,7 +37,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.wildfly.a2a.jakarta.common.SSESubscriber;
 import org.wildfly.a2a.jakarta.rest.compat03.A2ARestServerResourceDelegate_v0_3;
-import org.wildfly.a2a.jakarta.rest.web.compat03.A2ARestServerResource_v0_3;
+import org.wildfly.a2a.jakarta.rest.compat03.A2ARestServerResource_v0_3;
 
 
 @ArquillianTest
@@ -96,7 +96,7 @@ public class JakartaA2AServer_v0_3_RestTest extends AbstractA2AServerServerTest_
                 getJarForClass(SSESubscriber.class),
                 // a2a-jakarta-compat-0.3-rest.jar - contains delegate
                 getJarForClass(A2ARestServerResourceDelegate_v0_3.class),
-                // a2a-jakarta-compat-0.3-rest-web.jar - contains A2ARestServerResource_v0_3
+                // a2a-jakarta-compat-0.3-rest.jar - contains A2ARestServerResource_v0_3
                 getJarForClass(A2ARestServerResource_v0_3.class),
                 // v0.3 transport-rest
                 getJarForClass(RestHandler_v0_3.class),
