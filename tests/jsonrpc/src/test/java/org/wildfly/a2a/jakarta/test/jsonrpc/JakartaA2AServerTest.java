@@ -1,7 +1,5 @@
 package org.wildfly.a2a.jakarta.test.jsonrpc;
 
-
-import java.io.File;
 import java.util.List;
 
 import com.google.api.AnnotationsProto;
@@ -44,6 +42,7 @@ import org.wildfly.a2a.jakarta.jsonrpc.WildFlyJSONRPCTransportMetadata;
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.wildfly.a2a.jakarta.test.common.ArchiveUtils.getJarForClass;
 
 
 @ArquillianTest
@@ -135,11 +134,6 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
 
         archive.toString(true);
         return archive;
-    }
-
-    static JavaArchive getJarForClass(Class<?> clazz) throws Exception {
-        File f = new File(clazz.getProtectionDomain().getCodeSource().getLocation().toURI());
-        return ShrinkWrap.createFromZipFile(JavaArchive.class, f);
     }
 
     @Test

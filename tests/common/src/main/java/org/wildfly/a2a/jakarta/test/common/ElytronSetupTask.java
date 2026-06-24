@@ -47,10 +47,10 @@ public class ElytronSetupTask extends SnapshotServerSetupTask {
 
     private void createPropertiesFiles(Path configDir) throws IOException {
         usersPropertiesFile = configDir.resolve(USERS_FILE);
-        Files.writeString(usersPropertiesFile, "testuser=testpass\n");
+        Files.writeString(usersPropertiesFile, "testuser=testpass\nuserB=passB\n");
 
         rolesPropertiesFile = configDir.resolve(ROLES_FILE);
-        Files.writeString(rolesPropertiesFile, "testuser=user\n");
+        Files.writeString(rolesPropertiesFile, "testuser=user\nuserB=user\n");
     }
 
     private void createElytronResources(ManagementClient managementClient) throws IOException {

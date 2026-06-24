@@ -1,6 +1,7 @@
 package org.wildfly.a2a.jakarta.test.jsonrpc.compat03;
 
-import java.io.File;
+import static org.wildfly.a2a.jakarta.test.common.ArchiveUtils.getJarForClass;
+
 import java.util.List;
 
 import com.google.api.AnnotationsProto;
@@ -41,7 +42,6 @@ import org.wildfly.a2a.jakarta.common.AsyncManagedExecutorServiceProducer;
 import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResourceDelegate_v0_3;
 import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResource_v0_3;
 import org.wildfly.a2a.jakarta.test.common.ElytronSetupTask;
-
 
 @ArquillianTest
 @RunAsClient
@@ -121,8 +121,4 @@ public class JakartaA2AServer_v0_3_WithAuthJSONRPCTest extends AbstractA2AServer
         return archive;
     }
 
-    static JavaArchive getJarForClass(Class<?> clazz) throws Exception {
-        File f = new File(clazz.getProtectionDomain().getCodeSource().getLocation().toURI());
-        return ShrinkWrap.createFromZipFile(JavaArchive.class, f);
-    }
 }

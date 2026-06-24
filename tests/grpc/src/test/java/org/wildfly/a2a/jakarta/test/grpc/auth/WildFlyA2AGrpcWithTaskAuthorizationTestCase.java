@@ -1,14 +1,24 @@
-package org.wildfly.a2a.jakarta.test.grpc;
+package org.wildfly.a2a.jakarta.test.grpc.auth;
 
 import static org.wildfly.a2a.jakarta.test.common.ArchiveUtils.getJarForClass;
 
+import org.wildfly.a2a.jakarta.test.common.auth.GrpcCallContextHelper;
+import org.wildfly.a2a.jakarta.test.common.auth.MultiUserBasicAuthGrpcInterceptor;
+import org.wildfly.a2a.jakarta.test.common.auth.TestCallContextFactory;
+import org.wildfly.a2a.jakarta.test.grpc.A2ATestResource;
+
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import com.google.api.AnnotationsProto;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.protobuf.util.JsonFormat;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import mutiny.zero.ZeroPublisher;
 import org.a2aproject.sdk.A2A;
 import org.a2aproject.sdk.client.ClientBuilder;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
@@ -16,20 +26,23 @@ import org.a2aproject.sdk.client.transport.grpc.GrpcTransport;
 import org.a2aproject.sdk.client.transport.grpc.GrpcTransportConfigBuilder;
 import org.a2aproject.sdk.client.transport.grpc.GrpcTransportProvider;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
+import org.a2aproject.sdk.client.transport.spi.interceptors.auth.AuthInterceptor;
 import org.a2aproject.sdk.grpc.A2AServiceGrpc;
 import org.a2aproject.sdk.grpc.utils.JSONRPCUtils;
 import org.a2aproject.sdk.integrations.microprofile.MicroProfileConfigProvider;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.apps.common.AbstractA2AServerTest;
-import org.a2aproject.sdk.server.apps.common.TestTaskAuthorizationProvider;
+import org.a2aproject.sdk.server.apps.common.AbstractA2AServerWithTaskAuthorizationTest;
+import org.a2aproject.sdk.spec.AgentCapabilities;
+import org.a2aproject.sdk.spec.AgentCard;
+import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.Event;
+import org.a2aproject.sdk.spec.HTTPAuthSecurityScheme;
+import org.a2aproject.sdk.spec.SecurityRequirement;
 import org.a2aproject.sdk.spec.TransportProtocol;
 import org.a2aproject.sdk.transport.grpc.handler.GrpcHandler;
 import org.a2aproject.sdk.util.Assert;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import mutiny.zero.ZeroPublisher;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
@@ -43,13 +56,9 @@ import org.wildfly.a2a.jakarta.grpc.WildFlyGrpcHandler;
 
 @ArquillianTest
 @RunAsClient
-public class WildFlyA2AGrpcTestCase extends AbstractA2AServerTest {
+public class WildFlyA2AGrpcWithTaskAuthorizationTestCase extends AbstractA2AServerWithTaskAuthorizationTest {
 
-    private static ManagedChannel channel;
-
-    public WildFlyA2AGrpcTestCase() {
-        super(8080); // HTTP server port for utility endpoints
-    }
+    private static final Map<String, ManagedChannel> channels = new ConcurrentHashMap<>();
 
     @Override
     protected String getTransportProtocol() {
@@ -58,104 +67,98 @@ public class WildFlyA2AGrpcTestCase extends AbstractA2AServerTest {
 
     @Override
     protected String getTransportUrl() {
-        // gRPC port (from WildFly gRPC configuration)
         return "localhost:9555";
     }
 
     @Override
-    protected void configureTransport(ClientBuilder builder) {
-        builder.withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder().channelFactory(target -> {
-            channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
-            return channel;
-        }));
+    protected void configureTransportWithCredentials(ClientBuilder builder, String username, String password) {
+        AuthInterceptor authInterceptor = new AuthInterceptor(
+                (schemeName, context) -> BASIC_AUTH_SCHEME_NAME.equals(schemeName)
+                        ? getEncodedCredentials(username, password) : null);
+        builder.withTransport(GrpcTransport.class, new GrpcTransportConfigBuilder()
+                .channelFactory(target -> {
+                    ManagedChannel channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
+                    channels.put(username, channel);
+                    return channel;
+                })
+                .addInterceptor(authInterceptor));
     }
 
     @Deployment
     public static WebArchive createDeployment() throws Exception {
         final JavaArchive[] libraries = List.of(
-                // a2a-jakarta-grpc.jar - contains WildFlyGrpcTransportMetadata
                 getJarForClass(WildFlyGrpcHandler.class),
-                // a2a-java-sdk-client.jar
                 getJarForClass(A2A.class),
-                // a2a-java-sdk-common.jar
                 getJarForClass(Assert.class),
-                // a2a-java-sdk-http-client
                 getJarForClass(A2AHttpClient.class),
-                // a2a-java-sdk-server-common.jar
                 getJarForClass(PublicAgentCard.class),
-                // a2a-java-sdk-spec.jar
                 getJarForClass(Event.class),
-                // a2a-java-sdk-spec-grpc.jar (contains JSONRPCUtils)
                 getJarForClass(JSONRPCUtils.class),
-                //a2a-java-transport-grpc.jar
                 getJarForClass(GrpcHandler.class),
-                // a2a-java-sdk-jsonrpc-common.jar
                 getJarForClass(JsonUtil.class),
-                // gson.jar (required by jsonrpc-common)
                 getJarForClass(Gson.class),
-                // protobuf-java.jar - include correct version to match gencode 4.31.1
                 getJarForClass(com.google.protobuf.Message.class),
-                // protobuf-java-util.jar (required by spec-grpc JSONRPCUtils)
                 getJarForClass(JsonFormat.class),
-                // proto-google-common-protos.jar (required by spec-grpc)
                 getJarForClass(AnnotationsProto.class),
-                // guava.jar (required by a2a-java dependencies)
                 getJarForClass(ImmutableSet.class),
-                //a2a-java-sdk-microprofile-config.jar (needed to configure a2a-java settings via MP Config)
                 getJarForClass(MicroProfileConfigProvider.class),
-                // a2a-java-spec-grpc.jar (contains generated gRPC classes)
-                getJarForClass(A2AServiceGrpc.class), // Removing to avoid auto-registration by WildFly gRPC subsystem
-                // mutiny-zero.jar. This is provided by some WildFly layers, but not always, and not in
-                // the server provisioned by Glow when inspecting our war
+                getJarForClass(A2AServiceGrpc.class),
                 getJarForClass(ZeroPublisher.class),
-                // a2a-java-sdk-client-transport-spi.jar (client transport SPI)
                 getJarForClass(ClientTransport.class),
-                // a2a-java-sdk-client-transport-grpc.jar (gRPC client transport)
                 getJarForClass(GrpcTransportProvider.class),
-                // a2a-jakarta-common.jar (ManagedExecutor for RequestScoped bean injection into AgentExecutors)
                 getJarForClass(AsyncManagedExecutorServiceProducer.class)).toArray(new JavaArchive[0]);
 
-        // Create MANIFEST.MF with gRPC module dependencies
-        // These are provided by WildFly's gRPC feature pack and should not be packaged in WAR
-        // meta-inf export makes the module classes visible to all classloaders in the deployment
         String manifest = "Manifest-Version: 1.0\n" +
                 "Dependencies: io.grpc-all\n";
 
-        WebArchive archive = ShrinkWrap.create(WebArchive.class, "ROOT.war")
+        return ShrinkWrap.create(WebArchive.class, "ROOT.war")
                 .addAsLibraries(libraries)
-                // Extra dependencies needed by the tests
                 .addPackage(AbstractA2AServerTest.class.getPackage())
                 .addPackage(A2ATestResource.class.getPackage())
-                .addClass(RestApplication.class)
+                .addClass(GrpcCallContextHelper.class)
+                .addClass(MultiUserBasicAuthGrpcInterceptor.class)
+                .addClass(TestCallContextFactory.class)
                 .addAsWebInfResource("WEB-INF/web.xml")
                 .addAsWebInfResource("META-INF/beans.xml", "beans.xml")
-                // Add test properties file for AgentCardProducer
                 .addAsResource("a2a-requesthandler-test.properties")
-                // Add MANIFEST.MF with gRPC module dependencies from WildFly feature pack
+                .addAsResource("META-INF/auth-microprofile-config.properties",
+                        "META-INF/microprofile-config.properties")
                 .setManifest(new StringAsset(manifest));
-
-        // Remove TestTaskAuthorizationProvider — it uses Quarkus's @IfBuildProperty to
-        // conditionally activate, but WildFly ignores that annotation and always creates
-        // the bean, causing TaskNotFoundError for unauthenticated requests.
-        archive.delete("/WEB-INF/classes/"
-                + TestTaskAuthorizationProvider.class.getName().replace('.', '/') + ".class");
-
-        return archive;
     }
 
     @Override
-    public void testAgentCardHeaders() {
-        // Skip - gRPC doesn't use HTTP caching headers for Agent Card
-        // The A2A spec section 8.6 caching requirements apply only to HTTP endpoints
+    protected AgentCard fetchAgentCardFromServer() {
+        return AgentCard.builder()
+                .name("test-card")
+                .description("A test agent card")
+                .version("1.0")
+                .capabilities(AgentCapabilities.builder()
+                        .streaming(false)
+                        .pushNotifications(false)
+                        .build())
+                .defaultInputModes(List.of("text"))
+                .defaultOutputModes(List.of("text"))
+                .skills(List.of())
+                .supportedInterfaces(List.of(new AgentInterface(getTransportProtocol(), getTransportUrl())))
+                .securitySchemes(Map.of(
+                        BASIC_AUTH_SCHEME_NAME,
+                        HTTPAuthSecurityScheme.builder()
+                                .scheme("basic")
+                                .description("HTTP Basic authentication")
+                                .build()))
+                .securityRequirements(List.of(new SecurityRequirement(Map.of(BASIC_AUTH_SCHEME_NAME, List.of()))))
+                .build();
     }
 
     @AfterAll
-    public static void closeChannel() {
-        channel.shutdownNow();
-        try {
-            channel.awaitTermination(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+    static void closeChannels() {
+        channels.values().forEach(ch -> {
+            ch.shutdownNow();
+            try {
+                ch.awaitTermination(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
     }
 }

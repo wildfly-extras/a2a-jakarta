@@ -2,6 +2,7 @@ package org.wildfly.a2a.jakarta.rest.compat03;
 
 import static org.a2aproject.sdk.compat03.transport.rest.context.RestContextKeys_v0_3.HEADERS_KEY;
 import static org.a2aproject.sdk.compat03.transport.rest.context.RestContextKeys_v0_3.METHOD_NAME_KEY;
+import static org.a2aproject.sdk.server.ServerCallContext.TRANSPORT_KEY;
 import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 
 import java.io.IOException;
@@ -44,6 +45,7 @@ import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
+import org.a2aproject.sdk.spec.TransportProtocol;
 import org.wildfly.a2a.jakarta.common.SSESubscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -358,6 +360,7 @@ public class A2ARestServerResourceDelegate_v0_3 {
 
         state.put(HEADERS_KEY, headers);
         state.put(METHOD_NAME_KEY, jsonRpcMethodName);
+        state.put(TRANSPORT_KEY, TransportProtocol.HTTP_JSON);
 
         Enumeration<String> en = request.getHeaders(A2AHeaders_v0_3.X_A2A_EXTENSIONS);
         List<String> extensionHeaderValues = new ArrayList<>();
