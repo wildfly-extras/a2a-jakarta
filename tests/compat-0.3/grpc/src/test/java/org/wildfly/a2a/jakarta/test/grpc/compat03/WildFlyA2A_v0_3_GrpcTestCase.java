@@ -1,6 +1,7 @@
 package org.wildfly.a2a.jakarta.test.grpc.compat03;
 
-import java.io.File;
+import static org.wildfly.a2a.jakarta.test.common.ArchiveUtils.getJarForClass;
+
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -162,11 +163,6 @@ public class WildFlyA2A_v0_3_GrpcTestCase extends AbstractA2AServerServerTest_v0
                 + TestTaskAuthorizationProvider.class.getName().replace('.', '/') + ".class");
 
         return archive;
-    }
-
-    static JavaArchive getJarForClass(Class<?> clazz) throws Exception {
-        File f = new File(clazz.getProtectionDomain().getCodeSource().getLocation().toURI());
-        return ShrinkWrap.createFromZipFile(JavaArchive.class, f);
     }
 
     @AfterAll

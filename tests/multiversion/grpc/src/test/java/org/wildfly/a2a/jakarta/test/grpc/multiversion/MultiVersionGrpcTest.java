@@ -1,6 +1,7 @@
 package org.wildfly.a2a.jakarta.test.grpc.multiversion;
 
-import java.io.File;
+import static org.wildfly.a2a.jakarta.test.common.ArchiveUtils.getJarForClass;
+
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -170,11 +171,6 @@ public class MultiVersionGrpcTest extends AbstractA2AServerTest {
                 + TestTaskAuthorizationProvider.class.getName().replace('.', '/') + ".class");
 
         return archive;
-    }
-
-    static JavaArchive getJarForClass(Class<?> clazz) throws Exception {
-        File f = new File(clazz.getProtectionDomain().getCodeSource().getLocation().toURI());
-        return ShrinkWrap.createFromZipFile(JavaArchive.class, f);
     }
 
     @Override

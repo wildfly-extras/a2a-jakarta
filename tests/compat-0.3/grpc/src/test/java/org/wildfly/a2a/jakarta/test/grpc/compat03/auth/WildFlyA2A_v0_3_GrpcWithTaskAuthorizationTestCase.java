@@ -1,10 +1,16 @@
 package org.wildfly.a2a.jakarta.test.grpc.compat03.auth;
 
 import static org.wildfly.a2a.jakarta.test.common.ArchiveUtils.getJarForClass;
+import static org.wildfly.a2a.jakarta.test.common.producer.SecurityAwareMultiVersionAgentCardProducer.DEFAULT_TEST_PORT;
 
+import org.wildfly.a2a.jakarta.test.common.auth.GrpcCallContextHelper;
+import org.wildfly.a2a.jakarta.test.common.auth.MultiUserBasicAuthGrpcInterceptor;
+import org.wildfly.a2a.jakarta.test.common.auth.TestCallContextFactory_v0_3;
 import org.wildfly.a2a.jakarta.test.grpc.compat03.RestApplication;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import com.google.api.AnnotationsProto;
@@ -23,7 +29,7 @@ import org.a2aproject.sdk.compat03.client.transport.grpc.GrpcTransportConfigBuil
 import org.a2aproject.sdk.compat03.client.transport.grpc.GrpcTransportProvider_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.auth.AuthInterceptor_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2AServerServerTest_v0_3;
-import org.a2aproject.sdk.compat03.conversion.AbstractA2AServerWithAuthTest_v0_3;
+import org.a2aproject.sdk.compat03.conversion.AbstractA2AServerWithTaskAuthorizationTest_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.grpc.A2AServiceGrpc;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
@@ -45,23 +51,21 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.wildfly.a2a.jakarta.common.AsyncManagedExecutorServiceProducer;
 import org.wildfly.a2a.jakarta.grpc.compat03.WildFlyGrpcHandler_v0_3;
-import org.wildfly.a2a.jakarta.test.common.BasicAuthGrpcInterceptor;
 import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResourceDelegate_v0_3;
 import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResource_v0_3;
 
 @ArquillianTest
 @RunAsClient
-public class WildFlyA2A_v0_3_GrpcWithAuthTestCase extends AbstractA2AServerWithAuthTest_v0_3 {
+public class WildFlyA2A_v0_3_GrpcWithTaskAuthorizationTestCase extends AbstractA2AServerWithTaskAuthorizationTest_v0_3 {
 
-    private static ManagedChannel authenticatedChannel;
-    private static ManagedChannel unauthenticatedChannel;
+    private static final int PORT = Integer.parseInt(
+            System.getProperty("test.agent.card.port", DEFAULT_TEST_PORT));
+    private static final Map<String, ManagedChannel> channels = new ConcurrentHashMap<>();
 
-    public WildFlyA2A_v0_3_GrpcWithAuthTestCase() {
-        super(8080);
+    public WildFlyA2A_v0_3_GrpcWithTaskAuthorizationTestCase() {
+        super(PORT);
     }
 
     @Override
@@ -75,22 +79,15 @@ public class WildFlyA2A_v0_3_GrpcWithAuthTestCase extends AbstractA2AServerWithA
     }
 
     @Override
-    protected void configureTransport(ClientBuilder_v0_3 builder) {
-        builder.withTransport(GrpcTransport_v0_3.class, new GrpcTransportConfigBuilder_v0_3().channelFactory(target -> {
-            unauthenticatedChannel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
-            return unauthenticatedChannel;
-        }));
-    }
-
-    @Override
-    protected void configureTransportWithAuth(ClientBuilder_v0_3 builder) {
+    protected void configureTransportWithCredentials(ClientBuilder_v0_3 builder, String username, String password) {
         AuthInterceptor_v0_3 authInterceptor = new AuthInterceptor_v0_3(
-                (schemeName, context) ->
-                        BASIC_AUTH_SCHEME_NAME.equals(schemeName) ? getEncodedCredentials() : null);
+                (schemeName, context) -> BASIC_AUTH_SCHEME_NAME.equals(schemeName)
+                        ? getEncodedCredentials(username, password) : null);
         builder.withTransport(GrpcTransport_v0_3.class, new GrpcTransportConfigBuilder_v0_3()
                 .channelFactory(target -> {
-                    authenticatedChannel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
-                    return authenticatedChannel;
+                    ManagedChannel channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
+                    channels.put(username, channel);
+                    return channel;
                 })
                 .addInterceptor(authInterceptor));
     }
@@ -137,7 +134,9 @@ public class WildFlyA2A_v0_3_GrpcWithAuthTestCase extends AbstractA2AServerWithA
                 .addAsLibraries(libraries)
                 .addPackage(AbstractA2AServerTest.class.getPackage())
                 .addPackage(RestApplication.class.getPackage())
-                .addClass(BasicAuthGrpcInterceptor.class)
+                .addClass(GrpcCallContextHelper.class)
+                .addClass(MultiUserBasicAuthGrpcInterceptor.class)
+                .addClass(TestCallContextFactory_v0_3.class)
                 .addAsWebInfResource("WEB-INF/web.xml")
                 .addAsWebInfResource("META-INF/beans.xml", "beans.xml")
                 .addAsResource("a2a-requesthandler-test.properties")
@@ -147,36 +146,14 @@ public class WildFlyA2A_v0_3_GrpcWithAuthTestCase extends AbstractA2AServerWithA
     }
 
     @AfterAll
-    public static void closeChannels() {
-        if (authenticatedChannel != null) {
-            authenticatedChannel.shutdownNow();
+    static void closeChannels() {
+        channels.values().forEach(ch -> {
+            ch.shutdownNow();
             try {
-                authenticatedChannel.awaitTermination(10, TimeUnit.SECONDS);
+                ch.awaitTermination(10, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-        }
-        if (unauthenticatedChannel != null) {
-            unauthenticatedChannel.shutdownNow();
-            try {
-                unauthenticatedChannel.awaitTermination(10, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-
-    @Test
-    @Override
-    @Disabled
-    public void testGetAgentCardIsPublic() {
-        // gRPC doesn't have a separate /.well-known/agent-card.json endpoint
-    }
-
-    @Test
-    @Override
-    @Disabled
-    public void testBasicAuthWorksViaHttp() {
-        // HTTP-specific test — not applicable for gRPC transport
+        });
     }
 }

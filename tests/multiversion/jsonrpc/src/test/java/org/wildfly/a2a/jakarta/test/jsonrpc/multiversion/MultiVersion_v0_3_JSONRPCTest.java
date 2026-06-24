@@ -1,6 +1,7 @@
 package org.wildfly.a2a.jakarta.test.jsonrpc.multiversion;
 
-import java.io.File;
+import static org.wildfly.a2a.jakarta.test.common.ArchiveUtils.getJarForClass;
+
 import java.util.List;
 
 import com.google.api.AnnotationsProto;
@@ -140,8 +141,4 @@ public class MultiVersion_v0_3_JSONRPCTest extends AbstractA2AServerServerTest_v
         return archive;
     }
 
-    static JavaArchive getJarForClass(Class<?> clazz) throws Exception {
-        File f = new File(clazz.getProtectionDomain().getCodeSource().getLocation().toURI());
-        return ShrinkWrap.createFromZipFile(JavaArchive.class, f);
-    }
 }

@@ -1,6 +1,7 @@
-package org.wildfly.a2a.jakarta.test.rest.multiversion;
+package org.wildfly.a2a.jakarta.test.rest.compat03;
 
 import static org.wildfly.a2a.jakarta.test.common.ArchiveUtils.getJarForClass;
+import static org.wildfly.a2a.jakarta.test.common.producer.SecurityAwareMultiVersionAgentCardProducer.DEFAULT_TEST_PORT;
 
 import java.util.List;
 
@@ -16,9 +17,11 @@ import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.compat03.client.ClientBuilder_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.rest.RestTransport_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.rest.RestTransportConfigBuilder_v0_3;
+import org.a2aproject.sdk.compat03.client.transport.spi.interceptors.auth.AuthInterceptor_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2AServerServerTest_v0_3;
+import org.a2aproject.sdk.compat03.conversion.AbstractA2AServerWithTaskAuthorizationTest_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
-import org.a2aproject.sdk.compat03.grpc.SendMessageRequestOrBuilder;
+import org.a2aproject.sdk.compat03.grpc.A2AServiceGrpc;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.TransportProtocol_v0_3;
 import org.a2aproject.sdk.compat03.transport.rest.handler.RestHandler_v0_3;
@@ -27,27 +30,30 @@ import org.a2aproject.sdk.integrations.microprofile.MicroProfileConfigProvider;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.apps.common.AbstractA2AServerTest;
-import org.a2aproject.sdk.server.apps.common.TestTaskAuthorizationProvider;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler;
 import org.a2aproject.sdk.util.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
+import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.wildfly.a2a.jakarta.common.SSESubscriber;
-import org.wildfly.a2a.jakarta.rest.A2ARestServerResource;
 import org.wildfly.a2a.jakarta.rest.compat03.A2ARestServerResource_v0_3;
-
+import org.wildfly.a2a.jakarta.test.common.ElytronSetupTask;
 
 @ArquillianTest
 @RunAsClient
-public class MultiVersion_v0_3_RestTest extends AbstractA2AServerServerTest_v0_3 {
+@ServerSetup(ElytronSetupTask.class)
+public class JakartaA2AServer_v0_3_WithTaskAuthorizationRestTest extends AbstractA2AServerWithTaskAuthorizationTest_v0_3 {
 
-    public MultiVersion_v0_3_RestTest() {
-        super(8080);
+    private static final int PORT = Integer.parseInt(
+            System.getProperty("test.agent.card.port", DEFAULT_TEST_PORT));
+
+    public JakartaA2AServer_v0_3_WithTaskAuthorizationRestTest() {
+        super(PORT);
     }
 
     @Override
@@ -57,12 +63,17 @@ public class MultiVersion_v0_3_RestTest extends AbstractA2AServerServerTest_v0_3
 
     @Override
     protected String getTransportUrl() {
-        return "http://localhost:8080";
+        return "http://localhost:" + PORT;
     }
 
     @Override
-    protected void configureTransport(ClientBuilder_v0_3 builder) {
-        builder.withTransport(RestTransport_v0_3.class, new RestTransportConfigBuilder_v0_3());
+    protected void configureTransportWithCredentials(ClientBuilder_v0_3 builder, String username, String password) {
+        AuthInterceptor_v0_3 authInterceptor = new AuthInterceptor_v0_3(
+                (schemeName, context) -> BASIC_AUTH_SCHEME_NAME.equals(schemeName)
+                        ? getEncodedCredentials(username, password) : null);
+        builder.withTransport(RestTransport_v0_3.class,
+                new RestTransportConfigBuilder_v0_3()
+                        .addInterceptor(authInterceptor));
     }
 
     @Deployment
@@ -70,78 +81,41 @@ public class MultiVersion_v0_3_RestTest extends AbstractA2AServerServerTest_v0_3
         JavaArchive v03TestJar = getJarForClass(AbstractA2AServerServerTest_v0_3.class);
 
         final JavaArchive[] libraries = List.of(
-                // a2a-java-sdk-common.jar
                 getJarForClass(Assert.class),
-                // a2a-java-sdk-http-client
                 getJarForClass(A2AHttpClient.class),
-                // a2a-java-sdk-server-common.jar
                 getJarForClass(PublicAgentCard.class),
-                // a2a-java-sdk-spec.jar
                 getJarForClass(Event.class),
-                // a2a-java-sdk-spec-grpc.jar (contains JSONRPCUtils)
                 getJarForClass(JSONRPCUtils.class),
-                // a2a-java-sdk-transport-rest (v1.0)
                 getJarForClass(RestHandler.class),
-                // a2a-java-sdk-jsonrpc-common.jar
                 getJarForClass(JsonUtil.class),
-                // gson.jar (required by jsonrpc-common)
                 getJarForClass(Gson.class),
-                // protobuf-java.jar (required by spec-grpc)
                 getJarForClass(InvalidProtocolBufferException.class),
-                // protobuf-java-util.jar (required by spec-grpc JSONRPCUtils)
                 getJarForClass(JsonFormat.class),
-                // proto-google-common-protos.jar (required by spec-grpc)
                 getJarForClass(AnnotationsProto.class),
-                // guava.jar (required by a2a-java dependencies)
                 getJarForClass(ImmutableSet.class),
-                // a2a-jakarta-common.jar (contains SSESubscriber)
                 getJarForClass(SSESubscriber.class),
-                // a2a-jakarta-rest.jar - contains v1.0 REST resource and delegate
-                getJarForClass(A2ARestServerResource.class),
-                // a2a-jakarta-compat-0.3-rest.jar - contains v0.3 REST resource and delegate
                 getJarForClass(A2ARestServerResource_v0_3.class),
-                // v0.3 transport-rest
                 getJarForClass(RestHandler_v0_3.class),
-                // v0.3 spec-grpc (required transitively by v0.3 transport-rest)
-                getJarForClass(SendMessageRequestOrBuilder.class),
-                // v0.3 server-conversion
                 getJarForClass(Convert_v0_3_To10RequestHandler.class),
-                // v0.3 spec types
                 getJarForClass(AgentCard_v0_3.class),
-                // a2a-java-sdk-microprofile-config.jar (needed to configure a2a-java settings via MP Config)
+                getJarForClass(A2AServiceGrpc.class),
                 getJarForClass(MicroProfileConfigProvider.class),
-                // mutiny-zero.jar. This is provided by some WildFly layers, but not always, and not in
-                // the server provisioned by Glow when inspecting our war
                 getJarForClass(ZeroPublisher.class),
-                // a2a-java-sdk-client.jar (client library)
                 getJarForClass(ClientConfig.class),
-                // a2a-java-sdk-client-transport-spi.jar (client transport SPI)
                 getJarForClass(ClientTransport.class),
-                // a2a-java-sdk-compat-0.3-client-transport-rest.jar (v0.3 REST client transport)
                 getJarForClass(RestTransport_v0_3.class),
-                // a2a-java-sdk-compat-0.3-server-conversion test-jar (v0.3 CDI producers for testing)
                 v03TestJar).toArray(JavaArchive[]::new);
-
 
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "ROOT.war")
                 .addAsLibraries(libraries)
-                // Extra dependencies needed by the tests
                 .addPackage(AbstractA2AServerTest.class.getPackage())
-                .addPackage(A2ATestResource.class.getPackage());
-        archive
-                // Add deployment descriptors
+                .addPackage(A2ATestResource.class.getPackage())
                 .addAsManifestResource("META-INF/beans.xml", "beans.xml")
-                .addAsWebInfResource("WEB-INF/web.xml", "web.xml")
-                // Add test properties file for AgentCardProducer
-                .addAsResource("a2a-requesthandler-test.properties");
-
-        // Remove TestTaskAuthorizationProvider — it uses Quarkus's @IfBuildProperty to
-        // conditionally activate, but WildFly ignores that annotation and always creates
-        // the bean, causing TaskNotFoundError for unauthenticated requests.
-        archive.delete("/WEB-INF/classes/"
-                + TestTaskAuthorizationProvider.class.getName().replace('.', '/') + ".class");
-
-        archive.toString(true);
+                .addAsWebInfResource("WEB-INF/web-auth.xml", "web.xml")
+                .addAsWebInfResource("WEB-INF/jboss-web-auth.xml", "jboss-web.xml")
+                .addAsResource("a2a-requesthandler-test.properties")
+                .addAsResource("META-INF/auth-microprofile-config.properties",
+                        "META-INF/microprofile-config.properties");
         return archive;
     }
 

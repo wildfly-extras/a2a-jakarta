@@ -1,6 +1,7 @@
 package org.wildfly.a2a.jakarta.test.rest;
 
-import java.io.File;
+import static org.wildfly.a2a.jakarta.test.common.ArchiveUtils.getJarForClass;
+
 import java.util.List;
 
 import com.google.api.AnnotationsProto;
@@ -110,11 +111,6 @@ public class JakartaA2AServerWithAuthTest extends AbstractA2AServerWithAuthTest 
                         "META-INF/microprofile-config.properties");
         archive.toString(true);
         return archive;
-    }
-
-    static JavaArchive getJarForClass(Class<?> clazz) throws Exception {
-        File f = new File(clazz.getProtectionDomain().getCodeSource().getLocation().toURI());
-        return ShrinkWrap.createFromZipFile(JavaArchive.class, f);
     }
 
     @Test

@@ -1,8 +1,9 @@
 package org.wildfly.a2a.jakarta.test.grpc.auth;
 
+import static org.wildfly.a2a.jakarta.test.common.ArchiveUtils.getJarForClass;
+
 import org.wildfly.a2a.jakarta.test.grpc.A2ATestResource;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -132,11 +133,6 @@ public class WildFlyA2AGrpcWithAuthTestCase extends AbstractA2AServerWithAuthTes
                 .addAsResource("META-INF/auth-microprofile-config.properties",
                         "META-INF/microprofile-config.properties")
                 .setManifest(new StringAsset(manifest));
-    }
-
-    static JavaArchive getJarForClass(Class<?> clazz) throws Exception {
-        File f = new File(clazz.getProtectionDomain().getCodeSource().getLocation().toURI());
-        return ShrinkWrap.createFromZipFile(JavaArchive.class, f);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package org.wildfly.a2a.jakarta.test.rest.multiversion.producer;
+package org.wildfly.a2a.jakarta.test.common.producer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -18,13 +19,17 @@ import org.a2aproject.sdk.spec.AgentCapabilities;
 import org.a2aproject.sdk.spec.AgentCard;
 import org.a2aproject.sdk.spec.AgentInterface;
 import org.a2aproject.sdk.spec.Compat03Fields;
+import org.a2aproject.sdk.spec.HTTPAuthSecurityScheme;
+import org.a2aproject.sdk.spec.SecurityRequirement;
 import org.a2aproject.sdk.spec.TransportProtocol;
 
 @ApplicationScoped
-public class MultiVersionAgentCardProducer {
+public class SecurityAwareMultiVersionAgentCardProducer {
 
     private static final String PREFERRED_TRANSPORT = "preferred-transport";
     private static final String A2A_REQUESTHANDLER_TEST_PROPERTIES = "/a2a-requesthandler-test.properties";
+    private static final String BASIC_AUTH_SCHEME_NAME = "basicAuth";
+    public static final String DEFAULT_TEST_PORT = "8080";
     private static final Set<String> VALID_TRANSPORTS = Set.of(
             TransportProtocol.JSONRPC.asString(),
             TransportProtocol.GRPC.asString(),
@@ -34,7 +39,7 @@ public class MultiVersionAgentCardProducer {
     @PublicAgentCard
     @ExtendedAgentCard
     public AgentCard agentCard() {
-        String port = System.getProperty("test.agent.card.port", "8080");
+        String port = System.getProperty("test.agent.card.port", DEFAULT_TEST_PORT);
         String preferredTransport = loadPreferredTransportFromProperties();
         String transportUrl = "http://localhost:" + port;
 
@@ -53,7 +58,14 @@ public class MultiVersionAgentCardProducer {
                 .defaultInputModes(Collections.singletonList("text"))
                 .defaultOutputModes(Collections.singletonList("text"))
                 .skills(new ArrayList<>())
-                .supportedInterfaces(interfaces);
+                .supportedInterfaces(interfaces)
+                .securitySchemes(Map.of(
+                        BASIC_AUTH_SCHEME_NAME,
+                        new HTTPAuthSecurityScheme(null, "basic", "HTTP Basic authentication")))
+                .securityRequirements(List.of(
+                        SecurityRequirement.builder()
+                                .scheme(BASIC_AUTH_SCHEME_NAME, List.of())
+                                .build()));
 
         Compat03Fields.addCompat03FieldsIfAvailable(builder, interfaces, transportUrl, preferredTransport);
 
@@ -61,7 +73,7 @@ public class MultiVersionAgentCardProducer {
     }
 
     private static String loadPreferredTransportFromProperties() {
-        URL url = MultiVersionAgentCardProducer.class.getResource(A2A_REQUESTHANDLER_TEST_PROPERTIES);
+        URL url = SecurityAwareMultiVersionAgentCardProducer.class.getResource(A2A_REQUESTHANDLER_TEST_PROPERTIES);
         if (url == null) {
             throw new IllegalStateException(A2A_REQUESTHANDLER_TEST_PROPERTIES
                     + " not found on classpath. Each test module must provide this file.");

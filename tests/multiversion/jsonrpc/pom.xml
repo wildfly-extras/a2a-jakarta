@@ -23,6 +23,13 @@
             <artifactId>a2a-jakarta-http-common</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Tests common module (ElytronSetupTask, web-auth.xml, jboss-web-auth.xml) -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-jakarta-tests-common</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
         <!-- v1.0 JSON-RPC module -->
         <dependency>
             <groupId>${project.groupId}</groupId>
