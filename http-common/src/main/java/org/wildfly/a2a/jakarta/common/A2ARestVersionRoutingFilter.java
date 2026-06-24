@@ -3,6 +3,7 @@ package org.wildfly.a2a.jakarta.common;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -35,6 +36,7 @@ public class A2ARestVersionRoutingFilter implements ContainerRequestFilter {
     private volatile boolean initialized;
     private A2AVersionResolver versionResolver;
     private Set<String> knownRestBasePaths;
+    private Set<String> rootProviderPathPrefixes;
 
     private void ensureInitialized() {
         if (!initialized) {
@@ -42,13 +44,18 @@ public class A2ARestVersionRoutingFilter implements ContainerRequestFilter {
                 if (!initialized) {
                     List<A2AVersionProvider> restProviders = new ArrayList<>();
                     knownRestBasePaths = new TreeSet<>(Comparator.comparingInt(String::length).reversed());
+                    Set<String> pathPrefixes = new HashSet<>();
                     for (A2AVersionProvider provider : allVersionProviders) {
                         String basePath = provider.getRestBasePath();
                         if (basePath != null) {
                             restProviders.add(provider);
                             knownRestBasePaths.add(basePath);
+                            if ("/".equals(basePath)) {
+                                pathPrefixes.addAll(provider.getRestPathPrefixes());
+                            }
                         }
                     }
+                    rootProviderPathPrefixes = pathPrefixes;
                     versionResolver = new A2AVersionResolver(restProviders);
                     initialized = true;
                 }
@@ -76,14 +83,23 @@ public class A2ARestVersionRoutingFilter implements ContainerRequestFilter {
         String versionHeader = requestContext.getHeaderString(A2AHeaders.A2A_VERSION);
 
         if (versionHeader == null) {
-            boolean matchesNonRootBasePath = false;
+            boolean matchesKnownPath = false;
             for (String basePath : knownRestBasePaths) {
                 if (!basePath.equals("/") && (path.startsWith(basePath + "/") || path.equals(basePath))) {
-                    matchesNonRootBasePath = true;
+                    matchesKnownPath = true;
                     break;
                 }
             }
-            if (!matchesNonRootBasePath) {
+            if (!matchesKnownPath) {
+                String normalizedPath = path.startsWith("/") ? path.substring(1) : path;
+                for (String prefix : rootProviderPathPrefixes) {
+                    if (normalizedPath.equals(prefix) || normalizedPath.startsWith(prefix + "/") || normalizedPath.startsWith(prefix + ":")) {
+                        matchesKnownPath = true;
+                        break;
+                    }
+                }
+            }
+            if (!matchesKnownPath) {
                 return;
             }
         }

@@ -31,6 +31,7 @@ import org.a2aproject.sdk.jsonrpc.common.json.IdJsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.InvalidParamsJsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonProcessingException;
+import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.jsonrpc.common.json.MethodNotFoundJsonMappingException;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.A2AErrorResponse;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.A2ARequest;
@@ -206,7 +207,17 @@ public class A2AServerResourceDelegate {
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of("GMT"));
         String lastModified = now.format(DateTimeFormatter.RFC_1123_DATE_TIME);
 
-        return Response.ok(agentCard)
+        String agentCardJson;
+        try {
+            agentCardJson = JsonUtil.toJson(agentCard);
+        } catch (JsonProcessingException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Internal Server Error")
+                    .build();
+        }
+
+        return Response.ok(agentCardJson)
+                .header(HttpHeaders.CONTENT_TYPE, "application/json")
                 .header(HttpHeaders.CACHE_CONTROL, "max-age=3600")
                 .header(HttpHeaders.ETAG, etag)
                 .header("Last-Modified", lastModified)

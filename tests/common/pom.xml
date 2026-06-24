@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly.a2a</groupId>
+        <artifactId>a2a-jakarta-tests-parent</artifactId>
+        <version>1.0.0.CR2-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>a2a-jakarta-tests-common</artifactId>
+
+    <packaging>jar</packaging>
+
+    <name>WildFly Extras - A2A Jakarta - Tests - Common</name>
+    <description>Java SDK for the Agent2Agent Protocol (A2A) - SDK - Jakarta - Tests - Common Infrastructure</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>

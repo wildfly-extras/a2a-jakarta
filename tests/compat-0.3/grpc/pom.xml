@@ -28,6 +28,12 @@
             <artifactId>a2a-jakarta-http-common</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.a2a</groupId>
+            <artifactId>a2a-jakarta-tests-common</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
         <!-- v0.3 Jakarta gRPC module -->
         <dependency>
             <groupId>${project.groupId}</groupId>

@@ -1,5 +1,7 @@
 package org.wildfly.a2a.jakarta.rest;
 
+import java.util.Set;
+
 import jakarta.enterprise.context.ApplicationScoped;
 
 import org.wildfly.a2a.jakarta.common.A2AVersionProvider;
@@ -25,5 +27,10 @@ public class RestVersionProvider_v1_0 implements A2AVersionProvider {
     @Override
     public String getRestBasePath() {
         return "/";
+    }
+
+    @Override
+    public Set<String> getRestPathPrefixes() {
+        return Set.of("tasks", "message:", "card", "extendedAgentCard");
     }
 }

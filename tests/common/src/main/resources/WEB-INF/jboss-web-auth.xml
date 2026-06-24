@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-web xmlns="urn:jboss:jboss-web:14.0">
+    <security-domain>a2a-test</security-domain>
+</jboss-web>

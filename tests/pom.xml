@@ -36,6 +36,7 @@
         </plugins>
     </build>
     <modules>
+        <module>common</module>
         <module>jsonrpc</module>
         <module>grpc</module>
         <module>rest</module>
