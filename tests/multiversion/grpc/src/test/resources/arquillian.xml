@@ -10,7 +10,7 @@
     <container qualifier="jboss" default="true">
         <configuration>
             <property name="jbossHome">${basedir}/target/wildfly</property>
-            <!-- WildFly with gRPC feature pack - uses default gRPC port 9555 -->
+            <!-- WildFly with gRPC feature-pack - uses default gRPC port 9555 -->
             <property name="javaVmArguments">${server.jvm.args} ${arquillian.java.vm.args}</property>
             <property name="jbossArguments">${jboss.args}</property>
             <property name="allowConnectingToRunningServer">true</property>

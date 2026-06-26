@@ -231,7 +231,7 @@
                             <artifactId>wildfly-galleon-pack</artifactId>
                             <version>${version.wildfly}</version>
                         </feature-pack>
-                        <!-- Add gRPC feature pack -->
+                        <!-- Add gRPC feature-pack -->
                         <feature-pack>
                             <groupId>org.wildfly.grpc</groupId>
                             <artifactId>wildfly-grpc-feature-pack</artifactId>
@@ -263,7 +263,7 @@
                     <provisioning-file>${project.build.directory}/glow-scan/provisioning.xml</provisioning-file>
                     <jboss-home>${jboss.home}</jboss-home>
                     <provisioning-dir>${jboss.home}</provisioning-dir>
-                    <!-- Set stability level to preview for gRPC feature pack -->
+                    <!-- Set stability level to preview for gRPC feature-pack -->
                     <galleon-options>
                         <jboss-fork-embedded>true</jboss-fork-embedded>
                         <stability-level>preview</stability-level>

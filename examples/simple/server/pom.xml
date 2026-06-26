@@ -82,7 +82,7 @@
                     <jboss-home>${jboss.home}</jboss-home>
                     <name>ROOT.war</name>
                     <provisioning-dir>${jboss.home}</provisioning-dir>
-                    <!-- Set stability level to preview for gRPC feature pack -->
+                    <!-- Set stability level to preview for gRPC feature-pack -->
                     <galleon-options>
                         <jboss-fork-embedded>true</jboss-fork-embedded>
                         <!--<stability-level>preview</stability-level>-->
@@ -135,7 +135,7 @@
                     <groupId>${project.groupId}</groupId>
                     <artifactId>a2a-jakarta-grpc</artifactId>
                     <version>${project.version}</version>
-                    <!-- Exclude gRPC core libraries as they are provided by WildFly's gRPC feature pack -->
+                    <!-- Exclude gRPC core libraries as they are provided by WildFly's gRPC feature-pack -->
                     <exclusions>
                         <exclusion>
                             <groupId>io.grpc</groupId>
@@ -162,21 +162,21 @@
             <build>
                 <plugins>
                     <plugin>
-                        <!-- Add additional configuration to provision a server with the gRPC feature pack -->
+                        <!-- Add additional configuration to provision a server with the gRPC feature-pack -->
                         <groupId>org.wildfly.plugins</groupId>
                         <artifactId>wildfly-maven-plugin</artifactId>
                         <configuration>
                             <feature-packs>
                                 <!--
-                                    Still include the main WildFly feature pack, so we are not stuck
-                                    to the version used by the gRPC feature pack
+                                    Still include the main WildFly feature-pack, so we are not stuck
+                                    to the version used by the gRPC feature-pack
                                 -->
                                 <feature-pack>
                                     <groupId>org.wildfly</groupId>
                                     <artifactId>wildfly-galleon-pack</artifactId>
                                     <version>${version.wildfly}</version>
                                 </feature-pack>
-                                <!-- Add the gRPC feature pack -->
+                                <!-- Add the gRPC feature-pack -->
                                 <feature-pack>
                                     <groupId>org.wildfly.grpc</groupId>
                                     <artifactId>wildfly-grpc-feature-pack</artifactId>
@@ -188,7 +188,7 @@
                                     <add-on>grpc</add-on>
                                 </add-ons>
                             </discover-provisioning-info>
-                            <!-- Set stability level to preview for gRPC feature pack -->
+                            <!-- Set stability level to preview for gRPC feature-pack -->
                             <galleon-options>
                                 <jboss-fork-embedded>true</jboss-fork-embedded>
                                 <stability-level>preview</stability-level>

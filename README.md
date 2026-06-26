@@ -50,7 +50,7 @@ In the `tck/pom.xml` we enable JSON-RPC, gRPC, and REST, and have the following 
 * `org.a2aproject.sdk:a2a-java-sdk-tck-sut` - this is the application, which contains the `AgentExecutor` and `AgentCard` implementations for the TCK. In your case, they will most likely be implemented in the project you use to create the `.war`.
     * In this case we exclude all transitive dependencies, since we are doing the main dependency management via the transport-specific dependencies above.
 
-If you are deploying to WildFly and want to use gRPC, you will also need to provision the server with the gRPC feature pack. You can see how this is done in the `wildfly-maven-plugin` configuration in the `tck/pom.xml`. Since the gRPC subsystem and feature pack are currently at the `preview` stability level, you will need to start the server with the `--stability=preview` argument.
+If you are deploying to WildFly and want to use gRPC, you will also need to provision the server with the gRPC feature-pack. You can see how this is done in the `wildfly-maven-plugin` configuration in the `tck/pom.xml`. Since the gRPC subsystem and feature-pack are currently at the `preview` stability level, you will need to start the server with the `--stability=preview` argument.
 
 There are also some [examples](./examples/README.md) that show how to package an application selecting each transport. 
 

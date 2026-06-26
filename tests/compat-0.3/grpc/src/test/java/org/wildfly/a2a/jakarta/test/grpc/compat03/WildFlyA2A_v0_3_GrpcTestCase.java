@@ -139,7 +139,7 @@ public class WildFlyA2A_v0_3_GrpcTestCase extends AbstractA2AServerServerTest_v0
                 getJarForClass(AsyncManagedExecutorServiceProducer.class)).toArray(JavaArchive[]::new);
 
         // Create MANIFEST.MF with gRPC module dependencies
-        // These are provided by WildFly's gRPC feature pack and should not be packaged in WAR
+        // These are provided by WildFly's gRPC feature-pack and should not be packaged in WAR
         // meta-inf export makes the module classes visible to all classloaders in the deployment
         String manifest = "Manifest-Version: 1.0\n" +
                 "Dependencies: io.grpc-all\n";
@@ -153,7 +153,7 @@ public class WildFlyA2A_v0_3_GrpcTestCase extends AbstractA2AServerServerTest_v0
                 .addAsWebInfResource("META-INF/beans.xml", "beans.xml")
                 // Add test properties file for AgentCardProducer
                 .addAsResource("a2a-requesthandler-test.properties")
-                // Add MANIFEST.MF with gRPC module dependencies from WildFly feature pack
+                // Add MANIFEST.MF with gRPC module dependencies from WildFly feature-pack
                 .setManifest(new StringAsset(manifest));
 
         // Remove TestTaskAuthorizationProvider — it uses Quarkus's @IfBuildProperty to
