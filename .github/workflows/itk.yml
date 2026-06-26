@@ -1,0 +1,78 @@
+name: ITK
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Only run the latest job
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  itk:
+    name: ITK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Check if SDK version is SNAPSHOT
+        run: |
+          SDK_VERSION=$(grep -oP '<version\.sdk>\K[^<]+' pom.xml)
+          echo "Detected SDK_VERSION: ${SDK_VERSION}"
+          echo "SDK_VERSION=${SDK_VERSION}" >> "$GITHUB_ENV"
+          if [[ "${SDK_VERSION}" == *"-SNAPSHOT" ]]; then
+            echo "IS_SNAPSHOT=true" >> "$GITHUB_ENV"
+          else
+            echo "IS_SNAPSHOT=false" >> "$GITHUB_ENV"
+          fi
+
+      - name: Checkout a2a-java
+        if: env.IS_SNAPSHOT == 'true'
+        uses: actions/checkout@v6
+        with:
+          repository: a2aproject/a2a-java
+          path: a2a-java
+          persist-credentials: false
+
+      - name: Build a2a-java with Maven, skipping tests
+        if: env.IS_SNAPSHOT == 'true'
+        run: |
+          mvn -B install -DskipTests
+        working-directory: a2a-java
+
+      - name: Get a2a-java version and save as env var
+        if: env.IS_SNAPSHOT == 'true'
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout 2>&1 | grep -v '\[')
+          echo "Detected a2a-java version: ${VERSION}"
+          echo "SDK_VERSION=${VERSION}" >> "$GITHUB_ENV"
+        working-directory: a2a-java
+
+      - name: Run ITK Tests
+        run: bash run_itk.sh
+        working-directory: itk
+        env:
+          A2A_ITK_REVISION: main
+          # Set to DEBUG to enable verbose WildFly server logging for troubleshooting ITK failures
+          ITK_LOG_LEVEL: INFO
+          ITK_M2_REPO: ${{ env.IS_SNAPSHOT == 'true' && '/home/runner/.m2/repository' || '' }}

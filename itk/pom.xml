@@ -1,0 +1,229 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly.a2a</groupId>
+        <artifactId>a2a-jakarta-parent</artifactId>
+        <version>1.0.0.CR2-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>a2a-jakarta-itk</artifactId>
+
+    <packaging>war</packaging>
+
+    <name>WildFly Extras - A2A Jakarta - ITK Agent</name>
+    <description>Integration Test Kit agent for cross-SDK interoperability testing on WildFly</description>
+
+    <dependencies>
+        <!-- Server-side: v1.0 Jakarta transports -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-jakarta-jsonrpc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-jakarta-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-jakarta-grpc</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.grpc</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Server-side: v0.3 compat Jakarta transports -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-jakarta-compat-0.3-jsonrpc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-jakarta-compat-0.3-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>a2a-jakarta-compat-0.3-grpc</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.grpc</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Client-side: v1.0 client + transports -->
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-client-transport-jsonrpc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-client-transport-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-client-transport-grpc</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.grpc</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Client-side: v0.3 compat client + transports -->
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-compat-0.3-client</artifactId>
+            <version>${version.sdk}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-compat-0.3-client-transport-jsonrpc</artifactId>
+            <version>${version.sdk}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-compat-0.3-client-transport-rest</artifactId>
+            <version>${version.sdk}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-compat-0.3-client-transport-grpc</artifactId>
+            <version>${version.sdk}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.grpc</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Provided -->
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.a2aproject.sdk</groupId>
+            <artifactId>a2a-java-sdk-microprofile-config</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Compile instruction.proto -->
+            <plugin>
+                <groupId>io.github.ascopes</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>4.1.2</version>
+                <configuration>
+                    <protoc>4.33.2</protoc>
+                    <isIncrementalCompilationEnabled>false</isIncrementalCompilationEnabled>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Pre-resolve exec-maven-plugin so mvn exec:java doesn't need to download
+                 at runtime, which would hold Maven repository locks and conflict with
+                 other agent builds in the ITK container -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+            </plugin>
+
+            <!-- Provision WildFly with gRPC support -->
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <configuration>
+                    <feature-packs>
+                        <feature-pack>
+                            <groupId>org.wildfly</groupId>
+                            <artifactId>wildfly-galleon-pack</artifactId>
+                            <version>${version.wildfly}</version>
+                        </feature-pack>
+                        <feature-pack>
+                            <groupId>org.wildfly.grpc</groupId>
+                            <artifactId>wildfly-grpc-feature-pack</artifactId>
+                            <version>${version.wildfly.grpc}</version>
+                        </feature-pack>
+                    </feature-packs>
+                    <discover-provisioning-info>
+                        <add-ons>
+                            <add-on>grpc</add-on>
+                        </add-ons>
+                    </discover-provisioning-info>
+                    <jboss-home>${jboss.home}</jboss-home>
+                    <name>ROOT.war</name>
+                    <provisioning-dir>${jboss.home}</provisioning-dir>
+                    <galleon-options>
+                        <jboss-fork-embedded>true</jboss-fork-embedded>
+                        <stability-level>preview</stability-level>
+                    </galleon-options>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>provisioning</id>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

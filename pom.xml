@@ -299,6 +299,7 @@
         <module>compat-0.3</module>
         <module>tests</module>
         <module>tck</module>
+        <module>itk</module>
     </modules>
     <profiles>
         <profile>
