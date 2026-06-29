@@ -12,7 +12,7 @@
 
     <groupId>org.wildfly.a2a</groupId>
     <artifactId>a2a-jakarta-parent</artifactId>
-    <version>1.0.0.CR2-SNAPSHOT</version>
+    <version>1.0.0.CR2</version>
 
     <packaging>pom</packaging>
 
