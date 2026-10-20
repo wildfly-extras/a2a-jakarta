@@ -70,6 +70,9 @@
         <!-- Redirect test output to file -->
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
 
+        <!-- Needed until jboss-parent incorporates Central Publishing 0.12.0's Maven 3.10 staging fix. -->
+        <version.central-publishing.plugin>0.12.0</version.central-publishing.plugin>
+
         <!-- Plugin versions, not managed by parent -->
         <version.plugin.wildfly-glow-arquillian>1.4.1.Final</version.plugin.wildfly-glow-arquillian>
         <version.plugin.wildfly-maven>5.1.3.Final</version.plugin.wildfly-maven>
