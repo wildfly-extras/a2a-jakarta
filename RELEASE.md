@@ -109,6 +109,16 @@ Check that artifacts are available on Maven Central (this can take quite some ti
 https://central.sonatype.com/artifact/org.wildfly.a2a/a2a-jakarta-parent/1.0.0.Final
 ```
 
+### 7. Publish GitHub Release
+
+After Maven Central deployment succeeds, create or update the corresponding GitHub release:
+
+```
+https://github.com/wildfly-extras/a2a-jakarta/releases
+```
+
+Use the tag name as the release name and auto-generate the release notes.
+
 ## Troubleshooting
 
 ### GPG signing fails in workflow
