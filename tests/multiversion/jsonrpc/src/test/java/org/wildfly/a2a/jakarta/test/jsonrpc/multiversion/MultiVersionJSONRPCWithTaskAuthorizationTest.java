@@ -1,13 +1,24 @@
 package org.wildfly.a2a.jakarta.test.jsonrpc.multiversion;
 
+import static org.a2aproject.sdk.spec.A2AMethods.SEND_STREAMING_MESSAGE_METHOD;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.wildfly.a2a.jakarta.test.common.ArchiveUtils.getJarForClass;
 import static org.wildfly.a2a.jakarta.test.common.producer.SecurityAwareMultiVersionAgentCardProducer.DEFAULT_TEST_PORT;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.List;
 
 import com.google.api.AnnotationsProto;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import mutiny.zero.ZeroPublisher;
@@ -19,17 +30,23 @@ import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransportConfigBuilder
 import org.a2aproject.sdk.client.transport.jsonrpc.JSONRPCTransportProvider;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.client.transport.spi.interceptors.auth.AuthInterceptor;
+import org.a2aproject.sdk.common.A2AHeaders;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2AServerServerTest_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.transport.jsonrpc.handler.JSONRPCHandler_v0_3;
 import org.a2aproject.sdk.grpc.utils.JSONRPCUtils;
+import org.a2aproject.sdk.grpc.utils.ProtoUtils;
 import org.a2aproject.sdk.integrations.microprofile.MicroProfileConfigProvider;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.PublicAgentCard;
 import org.a2aproject.sdk.server.apps.common.AbstractA2AServerTest;
 import org.a2aproject.sdk.server.apps.common.AbstractA2AServerWithTaskAuthorizationTest;
 import org.a2aproject.sdk.spec.Event;
+import org.a2aproject.sdk.spec.Message;
+import org.a2aproject.sdk.spec.MessageSendParams;
+import org.a2aproject.sdk.spec.Task;
+import org.a2aproject.sdk.spec.TextPart;
 import org.a2aproject.sdk.spec.TransportProtocol;
 import org.a2aproject.sdk.transport.jsonrpc.handler.JSONRPCHandler;
 import org.a2aproject.sdk.util.Assert;
@@ -40,6 +57,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.jupiter.api.Test;
 import org.wildfly.a2a.jakarta.common.AsyncManagedExecutorServiceProducer;
 import org.wildfly.a2a.jakarta.jsonrpc.A2AServerResource;
 import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResource_v0_3;
@@ -115,6 +133,39 @@ public class MultiVersionJSONRPCWithTaskAuthorizationTest extends AbstractA2ASer
                 .addAsResource("META-INF/auth-microprofile-config.properties",
                         "META-INF/microprofile-config.properties");
         return archive;
+    }
+
+    @Test
+    public void testNonOwnerStreamingMessageReturnsSdkErrorWithRequestId() throws Exception {
+        Task task = sendMessageAndGetTask(createClient(USER_A, USER_A_PASSWORD), "stream-owner-test");
+        Message message = Message.builder()
+                .messageId("denied-message")
+                .taskId(task.id())
+                .contextId(task.contextId())
+                .role(Message.Role.ROLE_USER)
+                .parts(new TextPart("a2a-local:denied-stream"))
+                .build();
+        String body = JSONRPCUtils.toJsonRPCRequest("denied-stream-7", SEND_STREAMING_MESSAGE_METHOD,
+                ProtoUtils.ToProto.sendMessageRequest(MessageSendParams.builder().message(message).build()));
+        HttpRequest request = HttpRequest.newBuilder(URI.create(getTransportUrl() + "/"))
+                .timeout(Duration.ofSeconds(10))
+                .header("Authorization", "Basic " + getEncodedCredentials(USER_B, USER_B_PASSWORD))
+                .header(A2AHeaders.A2A_VERSION, "1.0")
+                .header("Content-Type", "application/json")
+                .header("Accept", "text/event-stream")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+        HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, response.statusCode(), response.body());
+        assertTrue(response.headers().firstValue("Content-Type").orElse("").startsWith("text/event-stream"),
+                response.body());
+        List<String> events = response.body().lines().filter(line -> line.startsWith("data:"))
+                .map(line -> line.substring("data:".length()).trim()).toList();
+        assertEquals(1, events.size(), response.body());
+        JsonObject error = JsonParser.parseString(events.get(0)).getAsJsonObject();
+        assertEquals("denied-stream-7", error.get("id").getAsString());
+        assertEquals(-32001, error.getAsJsonObject("error").get("code").getAsInt());
+        assertFalse(error.has("result"));
     }
 
 }

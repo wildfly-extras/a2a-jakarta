@@ -157,4 +157,24 @@ public class JakartaA2AServerTest extends AbstractA2AServerTest {
         }
     }
 
+    @Test
+    public void testRawQueryParameterValidation() {
+        String[] paths = {
+                "/tasks/missing?historyLength=",
+                "/tasks/missing?historyLength=bad",
+                "/tasks?pageSize=bad",
+                "/tasks?historyLength=bad",
+                "/tasks?status=invalid",
+                "/tasks?statusTimestampAfter=bad",
+                "/tasks/missing/pushNotificationConfigs?pageSize=",
+                "/tasks/missing/pushNotificationConfigs?pageSize=bad"
+        };
+        for (String path : paths) {
+            Response response = given().get(path);
+            assertEquals(422, response.statusCode(), path + ": " + response.asString());
+            assertEquals(MediaType.APPLICATION_JSON, response.contentType());
+            assertEquals("INVALID_ARGUMENT", response.jsonPath().getString("error.status"));
+        }
+    }
+
 }

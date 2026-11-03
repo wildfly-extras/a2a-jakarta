@@ -1,5 +1,6 @@
 package org.wildfly.a2a.jakarta.rest;
 
+import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static org.a2aproject.sdk.server.ServerCallContext.TRANSPORT_KEY;
 import static org.a2aproject.sdk.spec.A2AMethods.CANCEL_TASK_METHOD;
 import static org.a2aproject.sdk.spec.A2AMethods.DELETE_TASK_PUSH_NOTIFICATION_CONFIG_METHOD;
@@ -15,7 +16,6 @@ import static org.a2aproject.sdk.spec.A2AMethods.SUBSCRIBE_TO_TASK_METHOD;
 import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.HEADERS_KEY;
 import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.METHOD_NAME_KEY;
 import static org.a2aproject.sdk.transport.rest.context.RestContextKeys.TENANT_KEY;
-import static jakarta.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -39,19 +39,18 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 
 import org.a2aproject.sdk.common.A2AHeaders;
-import org.wildfly.a2a.jakarta.common.A2ARequestAttributes;
-import org.wildfly.a2a.jakarta.common.SSESubscriber;
-import org.wildfly.a2a.jakarta.common.TenantHolder;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
 import org.a2aproject.sdk.spec.A2AError;
-import org.a2aproject.sdk.spec.InvalidParamsError;
 import org.a2aproject.sdk.spec.TransportProtocol;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wildfly.a2a.jakarta.common.A2ARequestAttributes;
+import org.wildfly.a2a.jakarta.common.SSESubscriber;
+import org.wildfly.a2a.jakarta.common.TenantHolder;
 
 public class A2ARestServerResourceDelegate {
 
@@ -187,36 +186,14 @@ public class A2ARestServerResourceDelegate {
         try {
             String contextId = httpRequest.getParameter("contextId");
             String statusStr = httpRequest.getParameter("status");
-            if (statusStr != null && !statusStr.isEmpty()) {
-                statusStr = statusStr.toUpperCase();
-            }
             String pageSizeStr = httpRequest.getParameter(PAGE_SIZE_PARAM);
             String pageToken = httpRequest.getParameter(PAGE_TOKEN_PARAM);
             String historyLengthStr = httpRequest.getParameter(HISTORY_LENGTH_PARAM);
             String statusTimestampAfter = httpRequest.getParameter(STATUS_TIMESTAMP_AFTER);
             String includeArtifactsStr = httpRequest.getParameter("includeArtifacts");
 
-            Integer pageSize = null;
-            if (pageSizeStr != null && !pageSizeStr.isEmpty()) {
-                pageSize = Integer.valueOf(pageSizeStr);
-            }
-
-            Integer historyLength = null;
-            if (historyLengthStr != null && !historyLengthStr.isEmpty()) {
-                historyLength = Integer.valueOf(historyLengthStr);
-            }
-
-            Boolean includeArtifacts = null;
-            if (includeArtifactsStr != null && !includeArtifactsStr.isEmpty()) {
-                includeArtifacts = Boolean.valueOf(includeArtifactsStr);
-            }
-
-            response = restHandler.listTasks(context, readTenant(httpRequest), contextId, statusStr, pageSize,
-                    pageToken, historyLength, statusTimestampAfter, includeArtifacts);
-        } catch (NumberFormatException e) {
-            response = restHandler.createErrorResponse(new InvalidParamsError("Invalid number format in parameters"));
-        } catch (IllegalArgumentException e) {
-            response = restHandler.createErrorResponse(new InvalidParamsError("Invalid parameter value: " + e.getMessage()));
+            response = restHandler.listTasks(context, readTenant(httpRequest), contextId, statusStr, pageSizeStr,
+                    pageToken, historyLengthStr, statusTimestampAfter, includeArtifactsStr);
         } catch (A2AError e) {
             response = restHandler.createErrorResponse(e);
         } catch (Throwable t) {
@@ -233,13 +210,7 @@ public class A2ARestServerResourceDelegate {
         ServerCallContext context = createCallContext(httpRequest, securityContext, GET_TASK_METHOD);
         RestHandler.HTTPRestResponse response;
         try {
-            Integer historyLength = null;
-            if (historyLengthStr != null && !historyLengthStr.isEmpty()) {
-                historyLength = Integer.valueOf(historyLengthStr);
-            }
-            response = restHandler.getTask(context, readTenant(httpRequest), taskId, historyLength);
-        } catch (NumberFormatException e) {
-            response = restHandler.createErrorResponse(new InvalidParamsError("bad historyLength"));
+            response = restHandler.getTask(context, readTenant(httpRequest), taskId, historyLengthStr);
         } catch (A2AError e) {
             response = restHandler.createErrorResponse(e);
         } catch (Throwable t) {
@@ -292,13 +263,7 @@ public class A2ARestServerResourceDelegate {
         ServerCallContext context = createCallContext(httpRequest, securityContext, GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
         RestHandler.HTTPRestResponse response;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                response = restHandler.createErrorResponse(new InvalidParamsError("bad task id"));
-            } else if (configId == null || configId.isEmpty()) {
-                response = restHandler.createErrorResponse(new InvalidParamsError("bad configuration id"));
-            } else {
-                response = restHandler.getTaskPushNotificationConfiguration(context, readTenant(httpRequest), taskId, configId);
-            }
+            response = restHandler.getTaskPushNotificationConfiguration(context, readTenant(httpRequest), taskId, configId);
         } catch (A2AError e) {
             response = restHandler.createErrorResponse(e);
         } catch (Throwable t) {
@@ -312,34 +277,22 @@ public class A2ARestServerResourceDelegate {
     }
 
     public Response getOrListTaskPushNotificationConfigurations(String taskId, HttpServletRequest httpRequest, SecurityContext securityContext) {
-        RestHandler.HTTPRestResponse response = null;
+        RestHandler.HTTPRestResponse response;
         try {
-            if (taskId == null || taskId.isEmpty()) {
-                response = restHandler.createErrorResponse(new InvalidParamsError("bad task id"));
+            String requestURI = httpRequest.getRequestURI();
+            if (requestURI.endsWith("/")) {
+                ServerCallContext context = createCallContext(httpRequest, securityContext,
+                        GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+                response = restHandler.getTaskPushNotificationConfiguration(context, readTenant(httpRequest),
+                        taskId, null);
             } else {
-                String requestURI = httpRequest.getRequestURI();
-                if (requestURI.endsWith("/")) {
-                    ServerCallContext context = createCallContext(httpRequest, securityContext,
-                            GET_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
-                    response = restHandler.getTaskPushNotificationConfiguration(context, readTenant(httpRequest),
-                            taskId, null);
-                } else {
-                    ServerCallContext context = createCallContext(httpRequest, securityContext,
-                            LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
-                    int pageSize = 0;
-                    if (httpRequest.getParameter(PAGE_SIZE_PARAM) != null) {
-                        pageSize = Integer.parseInt(httpRequest.getParameter(PAGE_SIZE_PARAM));
-                    }
-                    String pageToken = "";
-                    if (httpRequest.getParameter(PAGE_TOKEN_PARAM) != null) {
-                        pageToken = httpRequest.getParameter(PAGE_TOKEN_PARAM);
-                    }
-                    response = restHandler.listTaskPushNotificationConfigurations(context, readTenant(httpRequest),
-                            taskId, pageSize, pageToken);
-                }
+                ServerCallContext context = createCallContext(httpRequest, securityContext,
+                        LIST_TASK_PUSH_NOTIFICATION_CONFIG_METHOD);
+                String pageSize = httpRequest.getParameter(PAGE_SIZE_PARAM);
+                String pageToken = httpRequest.getParameter(PAGE_TOKEN_PARAM);
+                response = restHandler.listTaskPushNotificationConfigurations(context, readTenant(httpRequest),
+                        taskId, pageSize, pageToken);
             }
-        } catch (NumberFormatException e) {
-            response = restHandler.createErrorResponse(new InvalidParamsError("bad " + PAGE_SIZE_PARAM));
         } catch (A2AError e) {
             response = restHandler.createErrorResponse(e);
         } catch (Throwable t) {

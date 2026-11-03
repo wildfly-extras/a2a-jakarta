@@ -1,5 +1,6 @@
 package org.wildfly.a2a.jakarta.test.rest.compat03;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.wildfly.a2a.jakarta.test.common.ArchiveUtils.getJarForClass;
 
 import java.util.List;
@@ -9,25 +10,26 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import io.restassured.response.Response;
 import mutiny.zero.ZeroPublisher;
 import org.a2aproject.sdk.client.config.ClientConfig;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.compat03.client.ClientBuilder_v0_3;
-import org.a2aproject.sdk.compat03.client.transport.rest.RestTransport_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.rest.RestTransportConfigBuilder_v0_3;
+import org.a2aproject.sdk.compat03.client.transport.rest.RestTransport_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2AServerServerTest_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.grpc.A2AServiceGrpc;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.TransportProtocol_v0_3;
 import org.a2aproject.sdk.compat03.transport.rest.handler.RestHandler_v0_3;
-import org.a2aproject.sdk.server.apps.common.AbstractA2AServerTest;
-import org.a2aproject.sdk.server.apps.common.TestTaskAuthorizationProvider;
 import org.a2aproject.sdk.grpc.utils.JSONRPCUtils;
 import org.a2aproject.sdk.integrations.microprofile.MicroProfileConfigProvider;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.PublicAgentCard;
+import org.a2aproject.sdk.server.apps.common.AbstractA2AServerTest;
+import org.a2aproject.sdk.server.apps.common.TestTaskAuthorizationProvider;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.transport.rest.handler.RestHandler;
 import org.a2aproject.sdk.util.Assert;
@@ -37,6 +39,7 @@ import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.jupiter.api.Test;
 import org.wildfly.a2a.jakarta.common.SSESubscriber;
 import org.wildfly.a2a.jakarta.rest.compat03.A2ARestServerResourceDelegate_v0_3;
 import org.wildfly.a2a.jakarta.rest.compat03.A2ARestServerResource_v0_3;
@@ -144,6 +147,21 @@ public class JakartaA2AServer_v0_3_RestTest extends AbstractA2AServerServerTest_
 
         archive.toString(true);
         return archive;
+    }
+
+    @Test
+    public void testHistoryLengthAliasesReachSdkValidation() {
+        String[] queries = {
+                "history_length=", "historyLength=", "history_length=-1", "historyLength=bad",
+                "history_length=&historyLength=2", "history_length=2&historyLength=bad"
+        };
+        for (String query : queries) {
+            Response response = given().get("/v1/tasks/missing?" + query);
+            assertEquals(422, response.statusCode(), query + ": " + response.asString());
+            assertEquals("application/json", response.contentType());
+            assertEquals("org.a2aproject.sdk.compat03.spec.InvalidParamsError_v0_3",
+                    response.jsonPath().getString("error"));
+        }
     }
 
 }

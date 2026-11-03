@@ -26,42 +26,32 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 
-import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import org.a2aproject.sdk.compat03.common.A2AHeaders_v0_3;
 import org.a2aproject.sdk.compat03.conversion.A2AProtocol_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonProcessingException_v0_3;
 import org.a2aproject.sdk.compat03.json.JsonUtil_v0_3;
 import org.a2aproject.sdk.compat03.spec.CancelTaskRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.DeleteTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetAuthenticatedExtendedCardRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.GetTaskRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.InternalError_v0_3;
-import org.a2aproject.sdk.compat03.spec.InvalidParamsError_v0_3;
-import org.a2aproject.sdk.compat03.spec.InvalidRequestError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONParseError_v0_3;
-import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCErrorResponse_v0_3;
-import org.a2aproject.sdk.compat03.spec.JSONRPCMessage_v0_3;
+import org.a2aproject.sdk.compat03.spec.JSONRPCError_v0_3;
 import org.a2aproject.sdk.compat03.spec.JSONRPCResponse_v0_3;
-import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.ListTaskPushNotificationConfigRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.MessageSendParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.MethodNotFoundError_v0_3;
 import org.a2aproject.sdk.compat03.spec.NonStreamingJSONRPCRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SendStreamingMessageRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.SetTaskPushNotificationConfigRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.StreamingJSONRPCRequest_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskIdParams_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskPushNotificationConfig_v0_3;
-import org.a2aproject.sdk.compat03.spec.TaskQueryParams_v0_3;
 import org.a2aproject.sdk.compat03.spec.TaskResubscriptionRequest_v0_3;
 import org.a2aproject.sdk.compat03.spec.UnsupportedOperationError_v0_3;
 import org.a2aproject.sdk.compat03.transport.jsonrpc.handler.JSONRPCHandler_v0_3;
+import org.a2aproject.sdk.compat03.transport.jsonrpc.handler.JSONRPCRequestDecoder_v0_3;
 import org.a2aproject.sdk.compat03.util.Utils_v0_3;
 import org.a2aproject.sdk.server.ServerCallContext;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
@@ -97,38 +87,22 @@ public class A2AServerResourceDelegate_v0_3 {
         JSONRPCErrorResponse_v0_3 error = null;
         Object requestId = null;
         try {
-            com.google.gson.JsonObject node;
-            try {
-                node = JsonParser.parseString(body).getAsJsonObject();
-            } catch (Exception e) {
-                throw new JSONParseError_v0_3(e.getMessage());
+            JSONRPCRequestDecoder_v0_3.DecodeResult result = JSONRPCRequestDecoder_v0_3.decode(body);
+            if (result instanceof JSONRPCRequestDecoder_v0_3.DecodeFailure failure) {
+                requestId = failure.requestId();
+                if (failure.methodName() != null) {
+                    context.getState().put(METHOD_NAME_KEY, failure.methodName());
+                }
+                throw failure.error();
             }
-
-            com.google.gson.JsonElement idElement = node.get("id");
-            if (idElement != null && !idElement.isJsonNull() && !idElement.isJsonPrimitive()) {
-                throw new InvalidRequestError_v0_3("Invalid JSON-RPC request: 'id' must be a string, number, or null");
+            JSONRPCRequestDecoder_v0_3.DecodedRequest decoded = (JSONRPCRequestDecoder_v0_3.DecodedRequest) result;
+            requestId = decoded.requestId();
+            context.getState().put(METHOD_NAME_KEY, decoded.methodName());
+            if (decoded.request() instanceof NonStreamingJSONRPCRequest_v0_3<?> request) {
+                response = processNonStreamingRequest(request, context);
+            } else {
+                throw new MethodNotFoundError_v0_3();
             }
-            if (idElement != null && !idElement.isJsonNull() && idElement.isJsonPrimitive()) {
-                com.google.gson.JsonPrimitive idPrimitive = idElement.getAsJsonPrimitive();
-                requestId = idPrimitive.isNumber() ? idPrimitive.getAsLong() : idPrimitive.getAsString();
-            }
-
-            com.google.gson.JsonElement jsonrpcElement = node.get("jsonrpc");
-            if (jsonrpcElement == null || !jsonrpcElement.isJsonPrimitive()
-                    || !JSONRPCMessage_v0_3.JSONRPC_VERSION.equals(jsonrpcElement.getAsString())) {
-                throw new InvalidRequestError_v0_3("Invalid JSON-RPC request: missing or invalid 'jsonrpc' field");
-            }
-
-            com.google.gson.JsonElement methodElement = node.get("method");
-            if (methodElement == null || !methodElement.isJsonPrimitive()) {
-                throw new InvalidRequestError_v0_3("Invalid JSON-RPC request: missing or invalid 'method' field");
-            }
-
-            String methodName = methodElement.getAsString();
-            context.getState().put(METHOD_NAME_KEY, methodName);
-
-            NonStreamingJSONRPCRequest_v0_3<?> request = deserializeNonStreamingRequest(node, requestId, methodName);
-            response = processNonStreamingRequest(request, context);
         } catch (JSONRPCError_v0_3 e) {
             error = new JSONRPCErrorResponse_v0_3(requestId, e);
         } catch (JsonSyntaxException e) {
@@ -165,37 +139,22 @@ public class A2AServerResourceDelegate_v0_3 {
         Object requestId = null;
         StreamingJSONRPCRequest_v0_3<?> request = null;
         try {
-            com.google.gson.JsonObject node;
-            try {
-                node = JsonParser.parseString(body).getAsJsonObject();
-            } catch (Exception e) {
-                throw new JSONParseError_v0_3(e.getMessage());
+            JSONRPCRequestDecoder_v0_3.DecodeResult result = JSONRPCRequestDecoder_v0_3.decode(body);
+            if (result instanceof JSONRPCRequestDecoder_v0_3.DecodeFailure failure) {
+                requestId = failure.requestId();
+                if (failure.methodName() != null) {
+                    context.getState().put(METHOD_NAME_KEY, failure.methodName());
+                }
+                throw failure.error();
             }
-
-            com.google.gson.JsonElement idElement = node.get("id");
-            if (idElement != null && !idElement.isJsonNull() && !idElement.isJsonPrimitive()) {
-                throw new InvalidRequestError_v0_3("Invalid JSON-RPC request: 'id' must be a string, number, or null");
+            JSONRPCRequestDecoder_v0_3.DecodedRequest decoded = (JSONRPCRequestDecoder_v0_3.DecodedRequest) result;
+            requestId = decoded.requestId();
+            context.getState().put(METHOD_NAME_KEY, decoded.methodName());
+            if (decoded.request() instanceof StreamingJSONRPCRequest_v0_3<?> streamingRequest) {
+                request = streamingRequest;
+            } else {
+                throw new MethodNotFoundError_v0_3();
             }
-            if (idElement != null && !idElement.isJsonNull() && idElement.isJsonPrimitive()) {
-                com.google.gson.JsonPrimitive idPrimitive = idElement.getAsJsonPrimitive();
-                requestId = idPrimitive.isNumber() ? idPrimitive.getAsLong() : idPrimitive.getAsString();
-            }
-
-            com.google.gson.JsonElement jsonrpcElement = node.get("jsonrpc");
-            if (jsonrpcElement == null || !jsonrpcElement.isJsonPrimitive()
-                    || !JSONRPCMessage_v0_3.JSONRPC_VERSION.equals(jsonrpcElement.getAsString())) {
-                throw new InvalidRequestError_v0_3("Invalid JSON-RPC request: missing or invalid 'jsonrpc' field");
-            }
-
-            com.google.gson.JsonElement methodElement = node.get("method");
-            if (methodElement == null || !methodElement.isJsonPrimitive()) {
-                throw new InvalidRequestError_v0_3("Invalid JSON-RPC request: missing or invalid 'method' field");
-            }
-
-            String methodName = methodElement.getAsString();
-            context.getState().put(METHOD_NAME_KEY, methodName);
-
-            request = deserializeStreamingRequest(node, requestId, methodName);
         } catch (JSONRPCError_v0_3 e) {
             LOGGER.debug("Error validating streaming request: {}", e.getMessage());
             sendJsonRpcError(httpResponse, requestId, e);
@@ -247,60 +206,6 @@ public class A2AServerResourceDelegate_v0_3 {
                     .entity("Internal Server Error")
                     .build();
         }
-    }
-
-    private NonStreamingJSONRPCRequest_v0_3<?> deserializeNonStreamingRequest(
-            com.google.gson.JsonObject node, Object requestId, String methodName) {
-        try {
-            return switch (methodName) {
-                case GetTaskRequest_v0_3.METHOD -> new GetTaskRequest_v0_3(
-                        JSONRPCMessage_v0_3.JSONRPC_VERSION, requestId, methodName, deserializeParams(node, TaskQueryParams_v0_3.class));
-                case CancelTaskRequest_v0_3.METHOD -> new CancelTaskRequest_v0_3(
-                        JSONRPCMessage_v0_3.JSONRPC_VERSION, requestId, methodName, deserializeParams(node, TaskIdParams_v0_3.class));
-                case SendMessageRequest_v0_3.METHOD -> new SendMessageRequest_v0_3(
-                        JSONRPCMessage_v0_3.JSONRPC_VERSION, requestId, methodName, deserializeParams(node, MessageSendParams_v0_3.class));
-                case SetTaskPushNotificationConfigRequest_v0_3.METHOD -> new SetTaskPushNotificationConfigRequest_v0_3(
-                        JSONRPCMessage_v0_3.JSONRPC_VERSION, requestId, methodName, deserializeParams(node, TaskPushNotificationConfig_v0_3.class));
-                case GetTaskPushNotificationConfigRequest_v0_3.METHOD -> new GetTaskPushNotificationConfigRequest_v0_3(
-                        JSONRPCMessage_v0_3.JSONRPC_VERSION, requestId, methodName, deserializeParams(node, GetTaskPushNotificationConfigParams_v0_3.class));
-                case ListTaskPushNotificationConfigRequest_v0_3.METHOD -> new ListTaskPushNotificationConfigRequest_v0_3(
-                        JSONRPCMessage_v0_3.JSONRPC_VERSION, requestId, methodName, deserializeParams(node, ListTaskPushNotificationConfigParams_v0_3.class));
-                case DeleteTaskPushNotificationConfigRequest_v0_3.METHOD -> new DeleteTaskPushNotificationConfigRequest_v0_3(
-                        JSONRPCMessage_v0_3.JSONRPC_VERSION, requestId, methodName, deserializeParams(node, DeleteTaskPushNotificationConfigParams_v0_3.class));
-                case GetAuthenticatedExtendedCardRequest_v0_3.METHOD -> new GetAuthenticatedExtendedCardRequest_v0_3(
-                        JSONRPCMessage_v0_3.JSONRPC_VERSION, requestId, methodName, null);
-                default -> throw new MethodNotFoundError_v0_3();
-            };
-        } catch (JSONRPCError_v0_3 e) {
-            throw e;
-        } catch (Exception e) {
-            throw new InvalidParamsError_v0_3(e.getMessage());
-        }
-    }
-
-    private StreamingJSONRPCRequest_v0_3<?> deserializeStreamingRequest(
-            com.google.gson.JsonObject node, Object requestId, String methodName) {
-        try {
-            return switch (methodName) {
-                case SendStreamingMessageRequest_v0_3.METHOD -> new SendStreamingMessageRequest_v0_3(
-                        JSONRPCMessage_v0_3.JSONRPC_VERSION, requestId, methodName, deserializeParams(node, MessageSendParams_v0_3.class));
-                case TaskResubscriptionRequest_v0_3.METHOD -> new TaskResubscriptionRequest_v0_3(
-                        JSONRPCMessage_v0_3.JSONRPC_VERSION, requestId, methodName, deserializeParams(node, TaskIdParams_v0_3.class));
-                default -> throw new MethodNotFoundError_v0_3();
-            };
-        } catch (JSONRPCError_v0_3 e) {
-            throw e;
-        } catch (Exception e) {
-            throw new InvalidParamsError_v0_3(e.getMessage());
-        }
-    }
-
-    private <T> T deserializeParams(com.google.gson.JsonObject node, Class<T> paramsType) throws JsonProcessingException_v0_3 {
-        com.google.gson.JsonElement paramsElement = node.get("params");
-        if (paramsElement == null || paramsElement.isJsonNull()) {
-            return null;
-        }
-        return JsonUtil_v0_3.fromJson(paramsElement.toString(), paramsType);
     }
 
     private JSONRPCResponse_v0_3<?> processNonStreamingRequest(
