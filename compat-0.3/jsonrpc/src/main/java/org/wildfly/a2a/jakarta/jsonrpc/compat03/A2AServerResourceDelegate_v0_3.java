@@ -349,6 +349,13 @@ public class A2AServerResourceDelegate_v0_3 {
             private Flow.Subscription subscription;
             private volatile boolean disconnected;
             private ScheduledFuture<?> heartbeatFuture;
+            // Serializes all access to the writer between the EventConsumer thread (onNext) and the
+            // heartbeat thread. The servlet container's PrintWriter is not guaranteed to be thread-safe:
+            // Undertow's ServletPrintWriterDelegate bypasses PrintWriter's own lock, so unsynchronized
+            // concurrent writes corrupt the HTTP chunked encoding of the response.
+            private final Object writeLock = new Object();
+            // Guarded by writeLock. Once set, no further writes are attempted.
+            private boolean closed;
 
             @Override
             public void onSubscribe(Flow.Subscription subscription) {
@@ -379,10 +386,17 @@ public class A2AServerResourceDelegate_v0_3 {
                     long id = eventId.getAndIncrement();
                     String sseEvent = "data: " + Utils_v0_3.toJsonString(item) + "\nid: " + id + "\n\n";
 
-                    writer.write(sseEvent);
-                    writer.flush();
+                    boolean failed;
+                    synchronized (writeLock) {
+                        if (closed) {
+                            return;
+                        }
+                        writer.write(sseEvent);
+                        writer.flush();
+                        failed = writer.checkError();
+                    }
 
-                    if (writer.checkError()) {
+                    if (failed) {
                         LOGGER.info("SSE write failed (likely client disconnect)");
                         handleClientDisconnect();
                         return;
@@ -398,7 +412,7 @@ public class A2AServerResourceDelegate_v0_3 {
             @Override
             public void onError(Throwable throwable) {
                 LOGGER.debug("Custom SSE subscriber onError called: {}", throwable.getMessage(), throwable);
-                cancelHeartbeat();
+                stopWriting();
                 handleClientDisconnect();
                 streamingComplete.completeExceptionally(throwable);
             }
@@ -406,11 +420,13 @@ public class A2AServerResourceDelegate_v0_3 {
             @Override
             public void onComplete() {
                 LOGGER.debug("Custom SSE subscriber onComplete called");
-                cancelHeartbeat();
-                try {
-                    writer.close();
-                } catch (Exception e) {
-                    LOGGER.error("Error closing writer: {}", e.getMessage(), e);
+                stopWriting();
+                synchronized (writeLock) {
+                    try {
+                        writer.close();
+                    } catch (Exception e) {
+                        LOGGER.error("Error closing writer: {}", e.getMessage(), e);
+                    }
                 }
                 streamingComplete.complete(null);
             }
@@ -420,22 +436,32 @@ public class A2AServerResourceDelegate_v0_3 {
                     return;
                 }
                 disconnected = true;
-                cancelHeartbeat();
+                stopWriting();
                 LOGGER.debug("SSE connection closed, calling EventConsumer.cancel() to stop polling loop");
                 if (subscription != null) {
                     subscription.cancel();
                 }
                 context.invokeEventConsumerCancelCallback();
-                try {
-                    writer.close();
-                } catch (Exception e) {
-                    LOGGER.debug("Error closing writer during disconnect: {}", e.getMessage());
+                synchronized (writeLock) {
+                    try {
+                        writer.close();
+                    } catch (Exception e) {
+                        LOGGER.debug("Error closing writer during disconnect: {}", e.getMessage());
+                    }
                 }
             }
 
-            private void cancelHeartbeat() {
+            /**
+             * Cancels the heartbeat and stops all further writes. Once this returns, no write is in
+             * progress and none will start. Cancelling the heartbeat future alone is not enough, as
+             * {@code cancel(false)} does not wait for a running heartbeat.
+             */
+            private void stopWriting() {
                 if (heartbeatFuture != null) {
                     heartbeatFuture.cancel(false);
+                }
+                synchronized (writeLock) {
+                    closed = true;
                 }
             }
 
@@ -443,9 +469,16 @@ public class A2AServerResourceDelegate_v0_3 {
                 if (disconnected) {
                     return;
                 }
-                writer.write(": ping\n\n");
-                writer.flush();
-                if (writer.checkError()) {
+                boolean failed;
+                synchronized (writeLock) {
+                    if (closed) {
+                        return;
+                    }
+                    writer.write(": ping\n\n");
+                    writer.flush();
+                    failed = writer.checkError();
+                }
+                if (failed) {
                     LOGGER.info("SSE heartbeat detected client disconnect");
                     handleClientDisconnect();
                 }

@@ -34,6 +34,15 @@ public class SSESubscriber implements Flow.Subscriber<String> {
     private final CompletableFuture<Void> streamingComplete;
     private final PrintWriter writer;
 
+    // Serializes all access to the writer between the EventConsumer thread (onNext) and the
+    // heartbeat thread. The servlet container's PrintWriter is not guaranteed to be thread-safe:
+    // Undertow's ServletPrintWriterDelegate bypasses PrintWriter's own lock, so unsynchronized
+    // concurrent writes corrupt the HTTP chunked encoding of the response.
+    private final Object writeLock = new Object();
+    // Guarded by writeLock. Once set, no further writes are attempted, so the request thread may
+    // safely close the writer after streamingComplete is completed.
+    private boolean closed;
+
     public SSESubscriber(CompletableFuture<Void> streamingComplete, PrintWriter writer, ScheduledExecutorService heartbeatScheduler) {
         this.streamingComplete = streamingComplete;
         this.writer = writer;
@@ -49,7 +58,7 @@ public class SSESubscriber implements Flow.Subscriber<String> {
         LOGGER.info("SSE onSubscribe: streaming started on thread={}", Thread.currentThread().getName());
         this.subscription = subscription;
         // Schedule heartbeat BEFORE requesting events: request() may trigger
-        // synchronous onComplete, which calls cancelHeartbeat() — the future
+        // synchronous onComplete, which calls stopWriting() — the future
         // must already be assigned so it can be cancelled.
         heartbeatFuture = heartbeatScheduler.scheduleAtFixedRate(
                 this::heartbeat, HEARTBEAT_INTERVAL_MS, HEARTBEAT_INTERVAL_MS, TimeUnit.MILLISECONDS);
@@ -78,10 +87,17 @@ public class SSESubscriber implements Flow.Subscriber<String> {
             long id = eventId.getAndIncrement();
             String sseEvent = SseFormatter.formatJsonAsSSE(item, id);
 
-            writer.write(sseEvent);
-            writer.flush();
+            boolean failed;
+            synchronized (writeLock) {
+                if (closed) {
+                    return;
+                }
+                writer.write(sseEvent);
+                writer.flush();
+                failed = writer.checkError();
+            }
 
-            if (writer.checkError()) {
+            if (failed) {
                 LOGGER.info("SSE onNext: write failed for event id={} (client disconnect)", id);
                 handleClientDisconnect();
                 return;
@@ -100,7 +116,7 @@ public class SSESubscriber implements Flow.Subscriber<String> {
     @Override
     public void onError(Throwable throwable) {
         LOGGER.info("SSE onError: {} on thread={}", throwable.getMessage(), Thread.currentThread().getName());
-        cancelHeartbeat();
+        stopWriting();
         if (subscription != null) {
             subscription.cancel();
         }
@@ -110,7 +126,7 @@ public class SSESubscriber implements Flow.Subscriber<String> {
     @Override
     public void onComplete() {
         LOGGER.info("SSE onComplete: stream finished normally on thread={}", Thread.currentThread().getName());
-        cancelHeartbeat();
+        stopWriting();
         streamingComplete.complete(null);
     }
 
@@ -119,7 +135,7 @@ public class SSESubscriber implements Flow.Subscriber<String> {
             return;
         }
         disconnected = true;
-        cancelHeartbeat();
+        stopWriting();
         LOGGER.info("SSE handleClientDisconnect: client disconnected, cancelling subscription on thread={}",
                 Thread.currentThread().getName());
         if (subscription != null) {
@@ -131,9 +147,17 @@ public class SSESubscriber implements Flow.Subscriber<String> {
         streamingComplete.complete(null);
     }
 
-    private void cancelHeartbeat() {
+    /**
+     * Cancels the heartbeat and stops all further writes. Once this returns, no write is in
+     * progress and none will start, so the writer can be closed safely. Cancelling the heartbeat
+     * future alone is not enough, as {@code cancel(false)} does not wait for a running heartbeat.
+     */
+    private void stopWriting() {
         if (heartbeatFuture != null) {
             heartbeatFuture.cancel(false);
+        }
+        synchronized (writeLock) {
+            closed = true;
         }
     }
 
@@ -141,12 +165,18 @@ public class SSESubscriber implements Flow.Subscriber<String> {
         if (disconnected) {
             return;
         }
-        // PrintWriter synchronizes internally, so concurrent writes from the
-        // EventConsumer thread and this heartbeat thread are safe. An SSE comment
-        // (": ...\n\n") is a complete message — it cannot corrupt an adjacent event.
-        writer.write(": ping\n\n");
-        writer.flush();
-        if (writer.checkError()) {
+        boolean failed;
+        synchronized (writeLock) {
+            if (closed) {
+                return;
+            }
+            // An SSE comment (": ...\n\n") is a complete message; writeLock guarantees it is
+            // never interleaved with an event written by onNext().
+            writer.write(": ping\n\n");
+            writer.flush();
+            failed = writer.checkError();
+        }
+        if (failed) {
             LOGGER.info("SSE heartbeat detected client disconnect");
             handleClientDisconnect();
         }
