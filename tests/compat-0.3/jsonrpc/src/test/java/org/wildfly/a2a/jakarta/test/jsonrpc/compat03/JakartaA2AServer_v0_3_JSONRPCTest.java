@@ -1,5 +1,6 @@
 package org.wildfly.a2a.jakarta.test.jsonrpc.compat03;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.wildfly.a2a.jakarta.test.common.ArchiveUtils.getJarForClass;
 
 import java.util.List;
@@ -9,24 +10,25 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import io.restassured.response.Response;
 import mutiny.zero.ZeroPublisher;
 import org.a2aproject.sdk.client.config.ClientConfig;
 import org.a2aproject.sdk.client.http.A2AHttpClient;
 import org.a2aproject.sdk.client.transport.spi.ClientTransport;
 import org.a2aproject.sdk.compat03.client.ClientBuilder_v0_3;
-import org.a2aproject.sdk.compat03.client.transport.jsonrpc.JSONRPCTransport_v0_3;
 import org.a2aproject.sdk.compat03.client.transport.jsonrpc.JSONRPCTransportConfigBuilder_v0_3;
+import org.a2aproject.sdk.compat03.client.transport.jsonrpc.JSONRPCTransport_v0_3;
 import org.a2aproject.sdk.compat03.conversion.AbstractA2AServerServerTest_v0_3;
 import org.a2aproject.sdk.compat03.conversion.Convert_v0_3_To10RequestHandler;
 import org.a2aproject.sdk.compat03.spec.AgentCard_v0_3;
 import org.a2aproject.sdk.compat03.spec.TransportProtocol_v0_3;
 import org.a2aproject.sdk.compat03.transport.jsonrpc.handler.JSONRPCHandler_v0_3;
-import org.a2aproject.sdk.server.apps.common.AbstractA2AServerTest;
-import org.a2aproject.sdk.server.apps.common.TestTaskAuthorizationProvider;
 import org.a2aproject.sdk.grpc.utils.JSONRPCUtils;
 import org.a2aproject.sdk.integrations.microprofile.MicroProfileConfigProvider;
 import org.a2aproject.sdk.jsonrpc.common.json.JsonUtil;
 import org.a2aproject.sdk.server.PublicAgentCard;
+import org.a2aproject.sdk.server.apps.common.AbstractA2AServerTest;
+import org.a2aproject.sdk.server.apps.common.TestTaskAuthorizationProvider;
 import org.a2aproject.sdk.spec.Event;
 import org.a2aproject.sdk.transport.jsonrpc.handler.JSONRPCHandler;
 import org.a2aproject.sdk.util.Assert;
@@ -36,9 +38,10 @@ import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.jupiter.api.Test;
 import org.wildfly.a2a.jakarta.common.AsyncManagedExecutorServiceProducer;
-import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResource_v0_3;
 import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResourceDelegate_v0_3;
+import org.wildfly.a2a.jakarta.jsonrpc.compat03.A2AServerResource_v0_3;
 
 @ArquillianTest
 @RunAsClient
@@ -140,6 +143,18 @@ public class JakartaA2AServer_v0_3_JSONRPCTest extends AbstractA2AServerServerTe
 
         archive.toString(true);
         return archive;
+    }
+
+    @Test
+    public void testInvalidMethodUsesSdkDecoder() {
+        for (String method : List.of("123", "true", "[]", "{}")) {
+            Response response = given().contentType(APPLICATION_JSON).accept(APPLICATION_JSON)
+                    .body("{\"jsonrpc\":\"2.0\",\"id\":\"original\",\"method\":" + method + "}")
+                    .post("/");
+            assertEquals(200, response.statusCode(), response.asString());
+            assertEquals("original", response.jsonPath().getString("id"));
+            assertEquals(-32600, response.jsonPath().getInt("error.code"));
+        }
     }
 
 }

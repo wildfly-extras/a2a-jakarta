@@ -54,7 +54,6 @@ import org.a2aproject.sdk.jsonrpc.common.wrappers.SendStreamingMessageRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.StreamingJSONRPCRequest;
 import org.a2aproject.sdk.jsonrpc.common.wrappers.SubscribeToTaskRequest;
 import org.a2aproject.sdk.server.ServerCallContext;
-import org.a2aproject.sdk.server.auth.TaskOperation;
 import org.a2aproject.sdk.server.auth.UnauthenticatedUser;
 import org.a2aproject.sdk.server.auth.User;
 import org.a2aproject.sdk.server.extensions.A2AExtensions;
@@ -147,10 +146,11 @@ public class A2AServerResourceDelegate {
         LOGGER.debug("Handling streaming request with custom SSE response");
 
         A2ARequest<?> request = null;
+        Flow.Publisher<? extends A2AResponse<?>> publisher;
         try {
             request = JSONRPCUtils.parseRequestBody(body, readTenant(httpRequest));
             context.getState().put(METHOD_NAME_KEY, request.getMethod());
-            validateStreamingRequest((StreamingJSONRPCRequest<?>) request, context);
+            publisher = createStreamingPublisher((StreamingJSONRPCRequest<?>) request, context);
         } catch (A2AError e) {
             LOGGER.debug("A2AError validating streaming request: {}", e.getMessage());
             sendJsonRpcError(response, request != null ? request.getId() : null, e);
@@ -190,7 +190,6 @@ public class A2AServerResourceDelegate {
         response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
 
         try {
-            Flow.Publisher<? extends A2AResponse<?>> publisher = createStreamingPublisher((StreamingJSONRPCRequest<?>) request, context);
             LOGGER.debug("Created streaming publisher: {}", publisher);
 
             if (publisher != null) {
@@ -265,16 +264,6 @@ public class A2AServerResourceDelegate {
             return jsonRpcHandler.onGetExtendedCardRequest(req, context);
         } else {
             return generateErrorResponse(request, new UnsupportedOperationError());
-        }
-    }
-
-    private void validateStreamingRequest(StreamingJSONRPCRequest<?> request, ServerCallContext context) throws A2AError {
-        if (request instanceof SendStreamingMessageRequest req) {
-            jsonRpcHandler.authorizeTaskAccess(req.getParams().message().taskId(), context,
-                    TaskOperation.MESSAGE_SEND_STREAM);
-        } else if (request instanceof SubscribeToTaskRequest req) {
-            jsonRpcHandler.authorizeTaskAccess(req.getParams().id(), context,
-                    TaskOperation.SUBSCRIBE_TO_TASK);
         }
     }
 
