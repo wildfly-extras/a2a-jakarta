@@ -2,7 +2,7 @@
 
 This is the integration of the [A2A Java SDK](https://github.com/a2aproject/a2a-java) for use in Jakarta servers. It is currently tested on **WildFly**, but it should be usable in other compliant Jakarta servers such as Tomcat, Jetty, and OpenLiberty. For Quarkus, use the reference implementation in the [A2A Java SDK](https://github.com/a2aproject/a2a-java) project.
 
-This implementation is aligned with **A2A Protocol Specification 1.0** and uses **A2A Java SDK 1.0.0.Final**.
+This implementation is aligned with **A2A Protocol Specification 1.0** and uses **A2A Java SDK 1.5.1.Final**.
 
 For more information about the A2A protocol, see [here](https://github.com/a2aproject/A2A).
 
